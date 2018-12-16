@@ -16,5 +16,5 @@ spoon.splitView:bindHotkeys({choose={mash,"s"},
                              chooseAppEmacs={mash,"e","Emacs"})
 ```
 
-To install, just download and double-click!
+To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
 See [the docs]() for complete information on configuring `SplitView`.
