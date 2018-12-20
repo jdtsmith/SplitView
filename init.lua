@@ -6,8 +6,9 @@
 --- * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires hand tuned time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables, below).
 --- * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
 --- * If there is only a single space, `SplitView` creates _and does not remove_ a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.
---- Download: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
---- Example config in you `~/.hammerspoon/init.lua`:
+---
+--- *Download*: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
+--- Example config in your `~/.hammerspoon/init.lua`:
 --- ```
 --- mash =      {"ctrl", "cmd"}
 --- spoon.splitView=hs.loadSpoon("SplitView")
@@ -105,7 +106,7 @@ function obj:choose(winChoices)
    return self
 end 
    
---- SplitView:byName()
+--- SplitView:byName([otherapp,othrewin,noChoose])
 --- Method
 --- Select an application and window _by name_ to enter split-view along side the currently focused window
 --- Useful for creating custom key bindings for specific applications and/or matching window title strings (see `SplitView:bindHotkeys`).  Also useful for calling from the command line (c.f. `hs.ipc.cliInstall`).  E.g., assuming `spoon.splitView` was assigned in your top level as in the example config above:

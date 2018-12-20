@@ -7,8 +7,9 @@ Important points:
 * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires hand tuned time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables, below).
 * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
 * If there is only a single space, `SplitView` creates _and does not remove_ a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.
-Download: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
-Example config in you `~/.hammerspoon/init.lua`:
+
+*Download*: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
+Example config in your `~/.hammerspoon/init.lua`:
 ```
 mash =      {"ctrl", "cmd"}
 spoon.splitView=hs.loadSpoon("SplitView")
@@ -59,7 +60,7 @@ spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppE
 
 | [byName](#byName)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
-| **Signature**                               | `SplitView:byName()`                                                                    |
+| **Signature**                               | `SplitView:byName([otherapp,othrewin,noChoose])`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Select an application and window _by name_ to enter split-view along side the currently focused window                                                                     |
 | **Parameters**                              | <ul><li>`otherapp`: (Optional) The (partial) name of the other window's application, or omitted/`nil` for no application filtering</li><li>`otherwin`: (Optional) The (partial) title of the other window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `false` for this parameter.</li></ul> |
