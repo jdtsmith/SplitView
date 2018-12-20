@@ -216,8 +216,7 @@ function obj:performSplit(thiswin,otherwin)
    end
 
    thiswin:setTopLeft(0,0)
-   otherwin:setSize({w=frame.w/2,h=frame.h})
-   local wsz=otherwin:size()  -- enlarge and move to RHS for click target
+   local wsz=otherwin:size()  -- move to RHS for click target
    otherwin:setTopLeft(frame.w/2+(frame.w/2-wsz.w)/2,(frame.h-wsz.h)/2)
 
    local clickPoint = thiswin:zoomButtonRect()
