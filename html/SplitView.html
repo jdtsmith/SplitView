@@ -1,0 +1,233 @@
+<html>
+    <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Hammerspoon docs: SplitView</title>
+    <style type="text/css">
+      a { text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      th { background-color: #DDDDDD; vertical-align: top; padding: 3px; }
+      td { width: 100%; background-color: #EEEEEE; vertical-align: top; padding: 3px; }
+      table { width: 100% ; border: 1px solid #0; text-align: left; }
+      section > table table td { width: 0; }
+    </style>
+    <link rel="stylesheet" href="docs.css" type="text/css" media="screen" />
+  </head>
+  <body>
+    <header>
+      <h1><a href="./index.html">docs</a> &raquo; SplitView</h1>
+      <p><em>Open two windows side by side in SplitView.</em>  Select by name and/or using a popup.  Also provides focus toggling between splitview "halves".
+Important points:</p>
+<ul>
+<li><code>SplitView</code> Relies on the undocumented <code>spaces</code> API, which <em>must</em> be installed separately for it to work; see <a href="https://github.com/asmagill/hs._asm.undocumented.spaces">https://github.com/asmagill/hs._asm.undocumented.spaces</a></li>
+<li>This tool works by <em>simulating</em> the split-view user interface: a long green-button click followed by a 2nd window click.  This requires hand tuned time delays to work reliably.  If it is unreliable for you, trying increasing these (see <code>delay*</code> variables, below).</li>
+<li><code>SplitView</code> uses <code>hw.window.filter</code> to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with <code>SplitView</code>'s operation.</li>
+<li>If there is only a single space, <code>SplitView</code> creates <em>and does not remove</em> a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.
+Download: [<a href="https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip">https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip</a>]
+Example config in you <code>~/.hammerspoon/init.lua</code>:
+<pre><code>mash =      {"ctrl", "cmd"}
+spoon.splitView=hs.loadSpoon("SplitView")
+spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"})</code></pre>
+</li>
+</ul>
+
+      </header>
+      <h3>API Overview</h3>
+      <ul>
+        <li>Variables - Configurable values</li>
+          <ul>
+            <li><a href="#debug">debug</a></li>
+            <li><a href="#delay*">delay*</a></li>
+            <li><a href="#showImage">showImage</a></li>
+          </ul>
+        <li>Methods - API calls which can only be made on an object returned by a constructor</li>
+          <ul>
+            <li><a href="#bindHotkeys">bindHotkeys</a></li>
+            <li><a href="#byName">byName</a></li>
+            <li><a href="#choose">choose</a></li>
+            <li><a href="#switchFocus">switchFocus</a></li>
+          </ul>
+      </ul>
+      <h3>API Documentation</h3>
+        <h4 class="documentation-section">Variables</h4>
+          <section id="debug">
+            <a name="//apple_ref/cpp/Variable/debug" class="dashAnchor"></a>
+            <h5><a href="#debug">debug</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:debug</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>(Boolean) Whether to print debug information to the console</p>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="delay*">
+            <a name="//apple_ref/cpp/Variable/delay*" class="dashAnchor"></a>
+            <h5><a href="#delay*">delay*</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:delay*</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>(Boolean) Time in seconds to delay between actions:</p>
+<ul>
+<li>delayZoomHold: How long to "hold" the zoom button down.  Defaults to 0.75s.</li>
+<li>delayOtherClick: How long to delay until clicking the other window.  Defaults to 0.5s.</li>
+<li>delayOtherHold: How long to "hold" clicking on the other window.  Defaults to 0.25s.</li>
+<li>delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 0.5s.
+Only set these variables if you are encountering failures achieving split view.  </li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="showImage">
+            <a name="//apple_ref/cpp/Variable/showImage" class="dashAnchor"></a>
+            <h5><a href="#showImage">showImage</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:showImage</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>(Boolean) Whether to show a thumbnail image of the window in the choice selection list.  On by default (which slightly slows the interface).</p>
+</td>
+              </tr>
+            </table>
+          </section>
+        <h4 class="documentation-section">Methods</h4>
+          <section id="bindHotkeys">
+            <a name="//apple_ref/cpp/Method/bindHotkeys" class="dashAnchor"></a>
+            <h5><a href="#bindHotkeys">bindHotkeys</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:bindHotkeys(mapping)</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Method</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>Binds hotkeys for SplitView</p>
+<p>Parameters:</p>
+<ul>
+<li>mapping - A table containing hotkey details for the following items:<ul>
+<li>choose - Interactively choose another window to enter split-view with</li>
+<li>switchFocus - Switch the split view window focus</li>
+<li>chooseApp* - Create one or more special <code>choose</code> bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. <code>chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}</code></li>
+<li>chooseWin* - Create one or more special <code>choose</code> bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. <code>{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}</code></li>
+<li>chooseAppWin* - Create one or more special <code>choose</code> bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}</li>
+</ul>
+</li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="byName">
+            <a name="//apple_ref/cpp/Method/byName" class="dashAnchor"></a>
+            <h5><a href="#byName">byName</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:byName()</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Method</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>Select an application and window <em>by name</em> to enter split-view along side the currently focused window
+Useful for creating custom key bindings for specific applications and/or matching window title strings (see <code>SplitView:bindHotkeys</code>).  Also useful for calling from the command line (c.f. <code>hs.ipc.cliInstall</code>).  E.g., assuming <code>spoon.splitView</code> was assigned in your top level as in the example config above:
+  <code>hs -c "spoon.splitView.byName("Terminal","server1")</code></p>
+<p>Parameters:</p>
+<ul>
+<li><code>otherapp</code>: (Optional) The (partial) name of the other window's application, or omitted/<code>nil</code> for no application filtering</li>
+<li><code>otherwin</code>: (Optional) The (partial) title of the other window, or omitted/<code>nil</code> for no window name filtering</li>
+<li><code>noChoose</code>: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass <code>false</code> for this parameter.</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>None</li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="choose">
+            <a name="//apple_ref/cpp/Method/choose" class="dashAnchor"></a>
+            <h5><a href="#choose">choose</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:choose()</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Method</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>Choose another window to enter split-view with current window</p>
+<p>Parameters:</p>
+<ul>
+<li><code>winChoices</code>: (Optional) A table of windows to choose from (as, e.g., provided by <code>SplitView:byName</code>).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are considered.</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>None</li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="switchFocus">
+            <a name="//apple_ref/cpp/Method/switchFocus" class="dashAnchor"></a>
+            <h5><a href="#switchFocus">switchFocus</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:switchFocus()</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Method</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>Switch focus from one side of a Split View to another, with an animated arrow showing the switch.</p>
+<p>Parameters:</p>
+<ul>
+<li>None</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>None</li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+  </body>
+</html>

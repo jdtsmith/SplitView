@@ -1,0 +1,49 @@
+[
+  {
+    "desc": "*Open two windows side by side in SplitView.*  Select by name and/or using a popup.  Also provides focus toggling between splitview \"halves\".",
+    "name": "SplitView",
+    "type": "Module"
+  },
+  {
+    "desc": "(Boolean) Whether to print debug information to the console",
+    "module": "SplitView",
+    "name": "debug",
+    "type": "Variable"
+  },
+  {
+    "desc": "(Boolean) Time in seconds to delay between actions:",
+    "module": "SplitView",
+    "name": "delay*",
+    "type": "Variable"
+  },
+  {
+    "desc": "(Boolean) Whether to show a thumbnail image of the window in the choice selection list.  On by default (which slightly slows the interface).",
+    "module": "SplitView",
+    "name": "showImage",
+    "type": "Variable"
+  },
+  {
+    "desc": "Binds hotkeys for SplitView",
+    "module": "SplitView",
+    "name": "bindHotkeys",
+    "type": "Method"
+  },
+  {
+    "desc": "Select an application and window _by name_ to enter split-view along side the currently focused window",
+    "module": "SplitView",
+    "name": "byName",
+    "type": "Method"
+  },
+  {
+    "desc": "Choose another window to enter split-view with current window",
+    "module": "SplitView",
+    "name": "choose",
+    "type": "Method"
+  },
+  {
+    "desc": "Switch focus from one side of a Split View to another, with an animated arrow showing the switch.",
+    "module": "SplitView",
+    "name": "switchFocus",
+    "type": "Method"
+  }
+]
