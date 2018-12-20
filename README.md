@@ -17,4 +17,4 @@ spoon.splitView:bindHotkeys({choose={mash,"s"},
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
-See [the docs]() for complete information on configuring `SplitView`.
+See [the docs](http://htmlpreview.github.io/?https://github.com/jdtsmith/SplitView/blob/master/html/SplitView.html) for complete information on configuring `SplitView`.
