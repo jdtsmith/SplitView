@@ -43,9 +43,9 @@ obj.debug = false
 ---  * delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 0.5s.
 --- Only set these variables if you are encountering failures achieving split view.  
 obj.delayZoomHold = 0.75
-obj.delayOtherClick = 0.75
+obj.delayOtherClick = 1.
 obj.delayOtherHold = 0.1
-obj.delayRestoreWins = .5
+obj.delayRestoreWins = .75
 
 -- Internal Function
 function _getGoodFocusedWindow(nofull)
