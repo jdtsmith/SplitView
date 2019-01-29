@@ -115,7 +115,7 @@ end
 --- Parameters:
 ---  * `otherapp`: (Optional) The (partial) name of the other window's application, or omitted/`nil` for no application filtering
 ---  * `otherwin`: (Optional) The (partial) title of the other window, or omitted/`nil` for no window name filtering
----  * `noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `false` for this parameter.
+---  * `noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.
 ---
 --- Returns:
 ---  * None
@@ -160,7 +160,7 @@ end
 --    Find all the unrelated applications, and hide them
 --    Find all the other windows of the same application, and send them to an adjacent space
 --    Move the first window the top left of the current screen
---    Move the 2nd window to occupy the right half of the screen
+--    Move the 2nd window to occupy the center of the right half of the screen
 --    Click on the zoom button for 0.75 second, then release it (activating split screen)
 --    Click in the middle of the right hand side of the screen (which will contain the window of interest)
 --    Unhide all hidden applications, and return windows from the adjacent screen to their original space
