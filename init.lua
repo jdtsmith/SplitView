@@ -12,7 +12,7 @@
 --- ```
 --- mash =      {"ctrl", "cmd"}
 --- spoon.splitView=hs.loadSpoon("SplitView")
---- spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"})
+--- spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
 --- ```
 local obj = {}
 obj.__index = obj

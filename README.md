@@ -7,13 +7,13 @@ Important points:
 * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
 * If there is only a single space, `SplitView` creates _and does not remove_ a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.
 
-Example config in you `~/.hammerspoon/init.lua`:
+Example config in your `~/.hammerspoon/init.lua`:
 ```
 mash =      {"ctrl", "cmd"}
 spoon.splitView=hs.loadSpoon("SplitView")
 spoon.splitView:bindHotkeys({choose={mash,"s"},
                              switchFocus={mash,"x"},
-                             chooseAppEmacs={mash,"e","Emacs"})
+                             chooseAppEmacs={mash,"e","Emacs"}})
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
