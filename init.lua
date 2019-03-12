@@ -11,6 +11,7 @@
 --- Example config in your `~/.hammerspoon/init.lua`:
 --- ```
 --- mash =      {"ctrl", "cmd"}
+--- mashshift = {"ctrl", "cmd","shift"}
 --- hs.loadSpoon("SplitView")
 --- spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
 --- ```

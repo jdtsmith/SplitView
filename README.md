@@ -10,6 +10,7 @@ Important points:
 Example config in your `~/.hammerspoon/init.lua`:
 ```
 mash =      {"ctrl", "cmd"}
+mashshift = {"ctrl", "cmd","shift"}
 hs.loadSpoon("SplitView") -- global, so we can access from command line
 spoon.SplitView:bindHotkeys({choose={mash,"e"},
 			     chooseAppEmacs={mashshift,"e","Emacs"},
