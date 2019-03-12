@@ -11,8 +11,8 @@
 --- Example config in your `~/.hammerspoon/init.lua`:
 --- ```
 --- mash =      {"ctrl", "cmd"}
---- spoon.splitView=hs.loadSpoon("SplitView")
---- spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
+--- hs.loadSpoon("SplitView")
+--- spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
 --- ```
 local obj = {}
 obj.__index = obj
