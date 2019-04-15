@@ -100,6 +100,7 @@ function obj:choose(winChoices)
 	 end 
    end)
 
+   -- chooser:placeholderText("SplitView with " .. win:application():title() .. "/" .. win:title()
    chooser:choices(choices)
    chooser:searchSubText(true)
    chooser:subTextColor({hex="#424"})
@@ -302,6 +303,44 @@ function obj:switchFocus()
    end
 end
 
+-- Find the order of the desktop button across all screens
+-- passed the current screen and space id
+function _fullDesktopButtonOrder(screen,space)
+   local pos=0
+   for _,scr in ipairs(hs.screen.allScreens()) do
+      local fssp=hs.fnutils.filter(scr:spaces(),
+				   function(s) return #spaces.spaceOwners(s)>0 end)
+      if scr==screen then
+	 local vk={}
+	 for k,v in ipairs(fssp) do vk[v]=k end
+	 return pos + vk[space]
+      else
+	 pos = pos + #fssp	-- skip to the next set
+      end
+   end
+   return 0
+end
+
+	    
+local ax = require("hs._asm.axuielement")
+function obj:removeCurrentFullScreenDesktop()
+   local space=spaces.activeSpace()
+   if #spaces.spaceOwners(space)==0 then return end -- Only for fullscreen spaces
+   
+   hs.application.open("Mission Control")
+   local screen=hs.screen.mainScreen()
+
+   dock = ax.applicationElement(hs.application("Dock"))
+   local fulls=dock:elementSearch({AXRole="AXButton",AXDescription="exit to full "},true)
+
+   local spnum=_fullDesktopButtonOrder(screen,space)
+   if spnum>0 then
+      local access=fulls[spnum]
+      if access then access:doRemoveDesktop() end
+   end
+   hs.eventtap.keyStroke({},"ESCAPE")
+end 
+
 
 --- SplitView:bindHotkeys(mapping)
 --- Method
@@ -311,6 +350,7 @@ end
 ---  * mapping - A table containing hotkey details for the following items:
 ---   * choose - Interactively choose another window to enter split-view with
 ---   * switchFocus - Switch the split view window focus
+---   * removeDesktop - Remove the current fullscreen desktop
 ---   * chooseApp* - Create one or more special `choose` bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. `chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}`
 ---   * chooseWin* - Create one or more special `choose` bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. `{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}`
 ---   * chooseAppWin* - Create one or more special `choose` bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}
@@ -318,6 +358,7 @@ function obj:bindHotkeys(mapping)
    local def = {
       choose = hs.fnutils.partial(self.choose, self),
       switchFocus = hs.fnutils.partial(self.switchFocus, self),
+      removeDesktop = hs.fnutils.partial(self.removeCurrentFullScreenDesktop,self)
    }
    for k,v in pairs(mapping) do
       if k:sub(1,6)=="choose" and #k>6 then

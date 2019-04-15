@@ -1,5 +1,5 @@
 # SplitView
-`SplitView` is a [Hammerspoon](https://www.hammerspoon.org) Spoon which can automate the painful chore of putting two windows side by side in MacOS's fullscreen split-view mode.  Using it is simple: just to navigate to the window you'd like on the left side of the split view, invoke the assigned key shortcut, choose another window from the popup, and watch the magic happen. You can also create special bindings to search by application and/or window name, or even invoke `SplitView` from the command line.  And as a bonus you can bind a shortcut key to toggle focus while in split view from one side to the other. 
+`SplitView` is a [Hammerspoon](https://www.hammerspoon.org) Spoon which can automate the painful chore of putting two windows side by side in MacOS's fullscreen split-view mode.  Using it is simple: just navigate to the window you'd like on the left side of the split view, invoke the assigned key shortcut, choose another window from the popup, and watch the magic happen. You can also create special bindings to search by application and/or window name, or even invoke `SplitView` from the command line.  And as a bonus you can bind a shortcut key to toggle focus while in split view from one side to the other, and remove a full screen desktop (single or split-view) with another shortcut.
 
 Important points:
 * `SplitView` relies on the undocumented `spaces` API, which _must_ be installed separately for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces
@@ -11,11 +11,12 @@ Example config in your `~/.hammerspoon/init.lua`:
 ```
 mash =      {"ctrl", "cmd"}
 mashshift = {"ctrl", "cmd","shift"}
-hs.loadSpoon("SplitView") -- global, so we can access from command line
+hs.loadSpoon("SplitView",true) -- add to global, so we can access from command line
 spoon.SplitView:bindHotkeys({choose={mash,"e"},
 			     chooseAppEmacs={mashshift,"e","Emacs"},
 			     chooseAppWin130={mashshift,"o","Terminal","130"},
-			     switchFocus={mash,"x"}})
+			     switchFocus={mash,"x"},
+				 removeDesktop={mashshift,"x"}})
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
