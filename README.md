@@ -16,7 +16,7 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
 			     chooseAppEmacs={mashshift,"e","Emacs"},
 			     chooseAppWin130={mashshift,"o","Terminal","130"},
 			     switchFocus={mash,"x"},
-                 removeDesktop={mashshift,"x"}})
+			     removeDesktop={mashshift,"x"}})
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
