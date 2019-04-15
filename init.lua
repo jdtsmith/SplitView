@@ -41,12 +41,12 @@ obj.debug = false
 ---  * delayZoomHold: How long to "hold" the zoom button down.  Defaults to 0.75s.
 ---  * delayOtherClick: How long to delay until clicking the other window.  Defaults to 1.0s.
 ---  * delayOtherHold: How long to "hold" clicking on the other window.  Defaults to 0.1s.
----  * delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 1s.
+---  * delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 1.5s.
 --- Only set these variables if you are encountering failures achieving split view.  
 obj.delayZoomHold = 0.75
 obj.delayOtherClick = 1.0
 obj.delayOtherHold = 0.1
-obj.delayRestoreWins = 1.0
+obj.delayRestoreWins = 1.5
 
 -- Internal Function
 function _getGoodFocusedWindow(nofull)
