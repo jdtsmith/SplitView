@@ -12,8 +12,9 @@ Important points:
 Example config in your `~/.hammerspoon/init.lua`:
 ```
 mash =      {"ctrl", "cmd"}
-spoon.splitView=hs.loadSpoon("SplitView")
-spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"})
+mashshift = {"ctrl", "cmd","shift"}
+hs.loadSpoon("SplitView")
+spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
 ```
 
 ## API Overview
@@ -56,14 +57,14 @@ spoon.splitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppE
 | **Signature**                               | `SplitView:bindHotkeys(mapping)`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Binds hotkeys for SplitView                                                                     |
-| **Parameters**                              | <ul><li>mapping - A table containing hotkey details for the following items:</li><li> choose - Interactively choose another window to enter split-view with</li><li> switchFocus - Switch the split view window focus</li><li> chooseApp* - Create one or more special `choose` bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. `chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}`</li><li> chooseWin* - Create one or more special `choose` bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. `{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}`</li><li> chooseAppWin* - Create one or more special `choose` bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}</li></ul> |
+| **Parameters**                              | <ul><li>mapping - A table containing hotkey details for the following items:</li><li> choose - Interactively choose another window to enter split-view with</li><li> switchFocus - Switch the split view window focus</li><li> removeDesktop - Remove the current fullscreen desktop</li><li> chooseApp* - Create one or more special `choose` bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. `chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}`</li><li> chooseWin* - Create one or more special `choose` bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. `{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}`</li><li> chooseAppWin* - Create one or more special `choose` bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}</li></ul> |
 
 | [byName](#byName)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:byName([otherapp,othrewin,noChoose])`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Select an application and window _by name_ to enter split-view along side the currently focused window                                                                     |
-| **Parameters**                              | <ul><li>`otherapp`: (Optional) The (partial) name of the other window's application, or omitted/`nil` for no application filtering</li><li>`otherwin`: (Optional) The (partial) title of the other window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `false` for this parameter.</li></ul> |
+| **Parameters**                              | <ul><li>`otherapp`: (Optional) The (partial) name of the other window's application, or omitted/`nil` for no application filtering</li><li>`otherwin`: (Optional) The (partial) title of the other window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
 
 | [choose](#choose)         |                                                                                     |
