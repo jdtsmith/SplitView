@@ -324,21 +324,58 @@ end
 	    
 local ax = require("hs._asm.axuielement")
 function obj:removeCurrentFullScreenDesktop()
-   local space=spaces.activeSpace()
-   if #spaces.spaceOwners(space)==0 then return end -- Only for fullscreen spaces
-   
-   hs.application.open("Mission Control")
-   local screen=hs.screen.mainScreen()
-
-   dock = ax.applicationElement(hs.application("Dock"))
-   local fulls=dock:elementSearch({AXRole="AXButton",AXDescription="exit to full "},true)
-
-   local spnum=_fullDesktopButtonOrder(screen,space)
-   if spnum>0 then
-      local access=fulls[spnum]
-      if access then access:doRemoveDesktop() end
+   -- screen with cursor in it
+   local frame, screen
+   local cursor=hs.mouse.getAbsolutePosition()
+   for _,s in pairs(hs.screen.allScreens()) do
+      frame=s:fullFrame()
+      if cursor.x >= frame.x and cursor.x<frame.x + frame.w and
+      cursor.y >= frame.y and cursor.y<frame.y + frame.h then
+	 screen=s  
+	 break
+      end
    end
-   hs.eventtap.keyStroke({},"ESCAPE")
+
+   -- current space for this screen, only fullscreen allowed
+   local scrID=screen:spacesUUID()
+   local space=spaces.spacesByScreenUUID(spaces.masks.currentSpaces)[scrID][1]
+   local type=spaces.spaceType(space)
+   if not (type==spaces.types.fullscreen or type==spaces.types.tiled) then return end
+   local layout=spaces.layout()[scrID]
+   local toSpace=hs.fnutils.find(layout,function(x) -- first user space in layout
+				    return spaces.spaceType(x)==spaces.types.user end)
+
+   -- order of the space in the layout
+   local spaceOrder={}
+   for k,v in ipairs(layout) do spaceOrder[v]=k end
+
+   -- with MC open, query the Dock's accessibility object 
+   dock = ax.applicationElement(hs.application("Dock"))
+   hs.application.open("Mission Control")
+   local spaceList=dock:searchPath({	-- a list of spaces for each screen
+	 {role="AXApplication"},
+	 {role="AXGroup",identifier="mc"},
+	 {role="AXGroup",identifier="mc.display"},
+	 {role="AXGroup",identifier="mc.spaces"},
+	 {role="AXList",identifier="mc.spaces.list"}})
+   while spaceList do
+      local pos=spaceList:position()
+      if pos.x==frame.x and pos.y==frame.y then -- this is our screen's spaces list
+	 spaceButtons=spaceList:elementSearch({role="AXButton"}) -- get the buttons
+	 break
+      end
+      spaceList=spaceList:next()
+   end 
+   if not spaceButtons then return end
+
+   local closeSpace=spaceButtons[spaceOrder[space]]
+   toSpace=spaceButtons[spaceOrder[toSpace]]
+   if self.debug then
+      print("Closing: ",closeSpace:description()," and pressing: ",toSpace:description())
+   end
+   
+   closeSpace:doRemoveDesktop()   
+   hs.timer.doAfter(.4,function() toSpace:doPress() end) -- exit
 end 
 
 
