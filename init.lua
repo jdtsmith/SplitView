@@ -20,7 +20,7 @@ obj.__index = obj
 
 -- Metadata
 obj.name = "SplitView"
-obj.version = "1.0.1"
+obj.version = "1.0.2"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
