@@ -18,12 +18,23 @@
 local obj = {}
 obj.__index = obj
 
--- Metadata
+--- Modules
+local hasAX, ax = pcall(require,"hs._asm.axuielement") 
+local hasSpaces, spaces = pcall(require, "hs._asm.undocumented.spaces")
+
+--- Metadata
 obj.name = "SplitView"
 obj.version = "1.0.2"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
+
+--- Default keys
+local mash =      {"ctrl", "cmd"}
+local mashshift = {"ctrl", "cmd","shift"}
+obj.defaultHotkeys={choose={mash,"e"},
+		    removeDesktop={mashshift,"x"},
+		    switchFocus={mash,"x"}}
 
 --- SplitView:showImage
 --- Variable
@@ -66,6 +77,11 @@ end
 --- Returns:
 ---  * None
 function obj:choose(winChoices)
+   if not hasSpaces then
+      print("hs._asm.undocumented.spaces is required for SplitView; please install")
+      return
+   end
+ 
    local win = _getGoodFocusedWindow()
    if not win then return end
    local choices={}
@@ -122,6 +138,10 @@ end
 --- Returns:
 ---  * None
 function obj:byName(otherapp,otherwin,noChoose)
+   if not hasSpaces then
+      print("hs._asm.undocumented.spaces is required for SplitView; please install")
+      return
+   end
    local win = _getGoodFocusedWindow()
    if not win then return end
    local selectWins={}
@@ -166,26 +186,27 @@ end
 --    Click on the zoom button for 0.75 second, then release it (activating split screen)
 --    Click in the middle of the right hand side of the screen (which will contain the window of interest)
 --    Unhide all hidden applications, and return windows from the adjacent screen to their original space
-local spaces = require "hs._asm.undocumented.spaces"
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
    local hsee=hs.eventtap.event
    hs.window.animationDuration=0
-   
-   local frame=thiswin:screen():fullFrame()
+
+   local screen=thiswin:screen()
+   local frame=screen:fullFrame()
    local thisapp,otherapp=thiswin:application(),otherwin:application()
 
-   local appsToHide, winsMinimized={},{}
+   local appsToHide, winsToTeleport={},{}
    local thisSpace=nil
 
    local filter=hs.window.filter.new()
+   filter:setScreens(screen:id())
    local wins=filter:getWindows()
    filter:pause()
    for _,w in pairs(wins) do
       local wa=w:application()
       if w~=thiswin and w~=otherwin and w:id() and w:isVisible() and not w:isMinimized() then
    	 if (wa==thisapp and w~=thiswin) or (wa==otherapp and w~=otherwin) then
-   	    winsMinimized[w:id()]=w -- same app, but different window
+   	    winsToTeleport[w:id()]=w -- same app, but different window, teleport it
    	 end
       end 
       if (wa~=thisapp and wa~=otherapp) then appsToHide[wa:pid()]=wa end
@@ -197,49 +218,94 @@ function obj:performSplit(thiswin,otherwin)
       ah:hide() 
    end
 
-   if winsMinimized then
-      thisSpace=spaces.activeSpace()
-      local screen=thiswin:screen()
+   local thisSpace
+   if next(winsToTeleport)~=nil then
       local uuid=screen:spacesUUID()
-      local userSpaces,toSpace=nil,nil
-      for k,v in pairs(spaces.layout()) do
-   	 userSpaces=v
-   	 if k==uuid then break end
-      end
+      thisSpace=spaces.spacesByScreenUUID(spaces.masks.currentSpaces)[uuid][1]
 
-      for i = #userSpaces, 1, -1 do
-   	 if userSpaces[i]==thisSpace then break end
-   	 toSpace=userSpaces[i]
+      local toSpace=hs.fnutils.find(spaces.layout()[uuid], 
+				    function(x) -- first other user space
+				       return spaces.spaceType(x)==spaces.types.user and
+				       x~=thisSpace end)
+      if not toSpace then
+	 toSpace=self:createSpace(uuid,frame)
       end
-      if not toSpace then toSpace=spaces.createSpace() end
-      for _,wm in pairs(winsMinimized) do
+      for _,wm in pairs(winsToTeleport) do
 	 if self.debug then print("Teleporting: ",wm:title()) end
 	 wm:spacesMoveTo(toSpace)
       end
    end
 
-   thiswin:setTopLeft(0,0)
-   local wsz=otherwin:size()  -- move to RHS for click target
-   otherwin:setTopLeft(frame.w/2+(frame.w/2-wsz.w)/2,(frame.h-wsz.h)/2)
 
-   local clickPoint = thiswin:zoomButtonRect()
-   hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
-   hs.timer.doAfter(self.delayZoomHold, function()
-		       hsee.newMouseEvent(hsee.types.leftMouseUp,clickPoint):post()
-		       hs.timer.doAfter(self.delayOtherClick,
-					function()
-					   local otherclick={x=frame.w*3/4,y=frame.h/2}
-					   hsee.newMouseEvent(hsee.types.leftMouseDown,otherclick):post()
-					   hs.timer.doAfter(self.delayOtherHold,function()
-							       hsee.newMouseEvent(hsee.types.leftMouseUp,otherclick):post()
-							       hs.timer.doAfter(self.delayRestoreWins,function()
-										   for _,ah in pairs(appsToHide) do ah:unhide() end
-										   for _,w in pairs(winsMinimized) do w:spacesMoveTo(thisSpace) end
-							       end)
-					   end)
-		       end)
-   end)
+   -- Ugly nested timing.  If we had to open MC to create a new desktop (secondary displays)
+   -- and the timer for hitting "ESCAPE" at the end is still running, wait for it
+   -- to complete, otherwise proceed.  Then, if it was running, wait for a
+   -- bit of additional time to let MC exit.  Then proceed to move the
+   -- window, long-click the zoom button, and, after another delay
+   -- click the RHS of the screen, and, after one more delay, restore
+   -- all the hidden apps and teleported windows.
+   local escapeTimerWasRunning=self.escapeTimer and self.escapeTimer:running()
+   hs.timer.waitUntil(
+      function()
+	 return not self.escapeTimer or not self.escapeTimer:running()
+      end,
+      function()
+	 hs.timer.doAfter(escapeTimerWasRunning and .5 or 0,
+			  function()
+			     thiswin:setTopLeft(frame.x,frame.y)
+			     local wsz=otherwin:size()  -- move to RHS for click target
+			     otherwin:setTopLeft(frame.x+frame.w/2+(frame.w/2-wsz.w)/2,
+						 frame.y+(frame.h-wsz.h)/2)
+			     
+			     local clickPoint = thiswin:zoomButtonRect()
+			     hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
+			     hs.timer.doAfter(self.delayZoomHold, function()
+						 hsee.newMouseEvent(hsee.types.leftMouseUp,clickPoint):post()
+						 hs.timer.doAfter(self.delayOtherClick,
+								  function()
+								     local otherclick={x=frame.x+frame.w*3/4,
+										       y=frame.y+frame.h/2}
+								     hsee.newMouseEvent(hsee.types.leftMouseDown,otherclick):post()
+								     hs.timer.doAfter(self.delayOtherHold,function()
+											 hsee.newMouseEvent(hsee.types.leftMouseUp,otherclick):post()
+											 hs.timer.doAfter(self.delayRestoreWins,function()
+													     for _,ah in pairs(appsToHide) do ah:unhide() end
+													     for _,w in pairs(winsToTeleport) do w:spacesMoveTo(thisSpace) end
+											 end)
+								     end)
+						 end)
+			     end)
+	 end)
+      end, 0.1)
 end
+
+--- SplitView:createSpace(screen)
+--- Internal method to create a space, working around a bug in spaces screen-based creation
+function obj:createSpace(scrUUID,frame)
+   if scrUUID==hs.screen.primaryScreen():spacesUUID() then
+      return spaces.createSpace() -- always creates on primary
+   end
+
+   if not hasAX then
+      print("Creating a space on a non-primary display requires hs._asm.axuielement")
+      return nil
+   end
+
+   hs.application.open("Mission Control")
+   local layout=spaces.layout()[scrUUID]
+   local spaceButtons, newSpaceButton=self:spaceButtons(frame)
+
+   local newSpace
+   if newSpaceButton then 
+      newSpaceButton:doPress();
+      local layoutRev={}
+      for _,v in pairs(layout) do layoutRev[v]=true end
+      newSpace=hs.fnutils.find(spaces.layout()[scrUUID],
+			       function(x) return not layoutRev[x] end)
+   end 
+   self.escapeTimer=hs.timer.doAfter(0.3,function() hs.eventtap.keyStroke({},"ESCAPE") end)
+   return(newSpace)
+end 
 
 
 obj.arrow=nil
@@ -303,27 +369,34 @@ function obj:switchFocus()
    end
 end
 
--- Find the order of the desktop button across all screens
--- passed the current screen and space id
-function _fullDesktopButtonOrder(screen,space)
-   local pos=0
-   for _,scr in ipairs(hs.screen.allScreens()) do
-      local fssp=hs.fnutils.filter(scr:spaces(),
-				   function(s) return #spaces.spaceOwners(s)>0 end)
-      if scr==screen then
-	 local vk={}
-	 for k,v in ipairs(fssp) do vk[v]=k end
-	 return pos + vk[space]
-      else
-	 pos = pos + #fssp	-- skip to the next set
-      end
-   end
-   return 0
-end
+-- invoke with MC active
+function obj:spaceButtons(frame)
+   dock = ax.applicationElement(hs.application("Dock"))
+   local spaceAX=dock:searchPath({	-- a list of space controls for each screen
+	 {role="AXApplication"},
+	 {role="AXGroup",identifier="mc"},
+	 {role="AXGroup",identifier="mc.display"},
+	 {role="AXGroup",identifier="mc.spaces"}})
 
+   local spaceButtons, newSpaceButton
+   while spaceAX do
+      local pos=spaceAX:position()
+      if pos.x==frame.x and pos.y==frame.y then -- this is screen's spaces list
+	 newSpaceButton=spaceAX:searchPath({{role="AXButton",identifier="mc.spaces.add"}})
+	 spaceButtons=spaceAX:searchPath({{role="AXList",identifier="mc.spaces.list"}}):
+	    elementSearch({role="AXButton"})
+	 break
+      end
+      spaceAX=spaceAX:next()
+   end
+   return spaceButtons, newSpaceButton
+end 
 	    
-local ax = require("hs._asm.axuielement")
 function obj:removeCurrentFullScreenDesktop()
+   if not hasAX or not hasSpaces then
+      print("removeDesktop requires hs._asm.axuielement and hs._asm.undocumented.spaces")
+      return
+   end
    -- screen with cursor in it
    local frame, screen
    local cursor=hs.mouse.getAbsolutePosition()
@@ -341,43 +414,32 @@ function obj:removeCurrentFullScreenDesktop()
    local space=spaces.spacesByScreenUUID(spaces.masks.currentSpaces)[scrID][1]
    local type=spaces.spaceType(space)
    if not (type==spaces.types.fullscreen or type==spaces.types.tiled) then return end
+
+   -- Open Mission control and determine layout
+   hs.application.open("Mission Control")
    local layout=spaces.layout()[scrID]
    local toSpace=hs.fnutils.find(layout,function(x) -- first user space in layout
 				    return spaces.spaceType(x)==spaces.types.user end)
-
-   -- order of the space in the layout
-   local spaceOrder={}
+   local spaceOrder={} 
    for k,v in ipairs(layout) do spaceOrder[v]=k end
 
    -- with MC open, query the Dock's accessibility object 
-   dock = ax.applicationElement(hs.application("Dock"))
-   hs.application.open("Mission Control")
-   local spaceList=dock:searchPath({	-- a list of spaces for each screen
-	 {role="AXApplication"},
-	 {role="AXGroup",identifier="mc"},
-	 {role="AXGroup",identifier="mc.display"},
-	 {role="AXGroup",identifier="mc.spaces"},
-	 {role="AXList",identifier="mc.spaces.list"}})
-   while spaceList do
-      local pos=spaceList:position()
-      if pos.x==frame.x and pos.y==frame.y then -- this is our screen's spaces list
-	 spaceButtons=spaceList:elementSearch({role="AXButton"}) -- get the buttons
-	 break
-      end
-      spaceList=spaceList:next()
-   end 
+   local spaceButtons=self:spaceButtons(frame)
    if not spaceButtons then return end
-
+   
    local closeSpace=spaceButtons[spaceOrder[space]]
    toSpace=spaceButtons[spaceOrder[toSpace]]
-   if self.debug then
-      print("Closing: ",closeSpace:description()," and pressing: ",toSpace:description())
-   end
    
-   closeSpace:doRemoveDesktop()   
-   hs.timer.doAfter(.4,function() toSpace:doPress() end) -- exit
-end 
-
+   hs.timer.waitUntil( -- wait for MC to finish loading and set AX properties
+      function() return closeSpace.doRemoveDesktop end, -- test
+      function ()		-- action
+	 if self.debug then
+	    print("Closing: ",closeSpace:description()," and Pressing: ",toSpace:description())
+	 end
+	 closeSpace:doRemoveDesktop()
+	 if toSpace.doPress then hs.timer.doAfter(.5,function() toSpace:doPress() end) end 
+      end,.05)
+end
 
 --- SplitView:bindHotkeys(mapping)
 --- Method
