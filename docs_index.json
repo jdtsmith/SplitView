@@ -1,19 +1,31 @@
 [
   {
-    "desc": "*Open two windows side by side in SplitView.*  Select by name and/or using a popup.  Also provides focus toggling between splitview \"halves\".",
+    "desc": "*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview \"halves\" and ability to close a fullscreen or split desktop by keyboard.",
     "name": "SplitView",
     "type": "Module"
   },
   {
-    "desc": "(Boolean) Whether to print debug information to the console",
+    "desc": "(Float) Time interval in seconds to check for MC/SplitView animations to complete",
+    "module": "SplitView",
+    "name": "checkInterval",
+    "type": "Variable"
+  },
+  {
+    "desc": "(Boolean) Whether to print debug information to the console.  Can",
     "module": "SplitView",
     "name": "debug",
     "type": "Variable"
   },
   {
-    "desc": "(Boolean) Time in seconds to delay between actions:",
+    "desc": "(Float) How long in seconds to delay finding and clicking the other window",
     "module": "SplitView",
-    "name": "delay*",
+    "name": "delayOtherClick",
+    "type": "Variable"
+  },
+  {
+    "desc": "(Float) How long in seconds to \"hold\" the zoom button down.",
+    "module": "SplitView",
+    "name": "delayZoomHold",
     "type": "Variable"
   },
   {
@@ -38,6 +50,12 @@
     "desc": "Choose another window to enter split-view with current window",
     "module": "SplitView",
     "name": "choose",
+    "type": "Method"
+  },
+  {
+    "desc": "Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.",
+    "module": "SplitView",
+    "name": "removeCurrentFullScreenDesktop",
     "type": "Method"
   },
   {

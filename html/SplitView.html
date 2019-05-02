@@ -15,29 +15,34 @@
   <body>
     <header>
       <h1><a href="./index.html">docs</a> &raquo; SplitView</h1>
-      <p><em>Open two windows side by side in SplitView.</em>  Select by name and/or using a popup.  Also provides focus toggling between splitview "halves".
+      <p><em>Open two windows side by side in Full Screen SplitView.</em>  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.
 Important points:</p>
 <ul>
-<li><code>SplitView</code> Relies on the undocumented <code>spaces</code> API, which <em>must</em> be installed separately for it to work; see <a href="https://github.com/asmagill/hs._asm.undocumented.spaces">https://github.com/asmagill/hs._asm.undocumented.spaces</a></li>
-<li>This tool works by <em>simulating</em> the split-view user interface: a long green-button click followed by a 2nd window click.  This requires hand tuned time delays to work reliably.  If it is unreliable for you, trying increasing these (see <code>delay*</code> variables, below).</li>
+<li><code>SplitView</code> relies on the undocumented <code>spaces</code> API, and the separate accessibility ui <code>axuielement</code>; which <em>must</em> both be installed for it to work; see <a href="https://github.com/asmagill/hs._asm.undocumented.spaces">https://github.com/asmagill/hs._asm.undocumented.spaces</a> and <a href="https://github.com/asmagill/hs._asm.axuielement/">https://github.com/asmagill/hs._asm.axuielement/</a>, </li>
+<li>This tool works by <em>simulating</em> the split-view user interface: a long green-button click followed by a 2nd window click.  This requires some time delays to work reliably.  If it is unreliable for you, trying increasing these (see <code>delay*</code> variables in the reference below).</li>
 <li><code>SplitView</code> uses <code>hw.window.filter</code> to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with <code>SplitView</code>'s operation.</li>
-<li>If there is only a single space, <code>SplitView</code> creates <em>and does not remove</em> a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.</li>
 </ul>
 <p><em>Download</em>: [<a href="https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip">https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip</a>]
 Example config in your <code>~/.hammerspoon/init.lua</code>:</p>
 
 <pre><code>mash =      {"ctrl", "cmd"}
 mashshift = {"ctrl", "cmd","shift"}
-hs.loadSpoon("SplitView")
-spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})</code></pre>
+hs.loadSpoon("SplitView",true) -- add to global, so we can access from command line
+spoon.SplitView:bindHotkeys({choose={mash,"e"},
+                 chooseAppEmacs={mashshift,"e","Emacs"},
+                 chooseAppWin130={mashshift,"o","Terminal","130"},
+                 switchFocus={mash,"x"},
+                 removeDesktop={mashshift,"x"}})</code></pre>
 
       </header>
       <h3>API Overview</h3>
       <ul>
         <li>Variables - Configurable values</li>
           <ul>
+            <li><a href="#checkInterval">checkInterval</a></li>
             <li><a href="#debug">debug</a></li>
-            <li><a href="#delay*">delay*</a></li>
+            <li><a href="#delayOtherClick">delayOtherClick</a></li>
+            <li><a href="#delayZoomHold">delayZoomHold</a></li>
             <li><a href="#showImage">showImage</a></li>
           </ul>
         <li>Methods - API calls which can only be made on an object returned by a constructor</li>
@@ -45,11 +50,31 @@ spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppE
             <li><a href="#bindHotkeys">bindHotkeys</a></li>
             <li><a href="#byName">byName</a></li>
             <li><a href="#choose">choose</a></li>
+            <li><a href="#removeCurrentFullScreenDesktop">removeCurrentFullScreenDesktop</a></li>
             <li><a href="#switchFocus">switchFocus</a></li>
           </ul>
       </ul>
       <h3>API Documentation</h3>
         <h4 class="documentation-section">Variables</h4>
+          <section id="checkInterval">
+            <a name="//apple_ref/cpp/Variable/checkInterval" class="dashAnchor"></a>
+            <h5><a href="#checkInterval">checkInterval</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:checkInterval</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>(Float) Time interval in seconds to check for MC/SplitView animations to complete</p>
+</td>
+              </tr>
+            </table>
+          </section>
           <section id="debug">
             <a name="//apple_ref/cpp/Variable/debug" class="dashAnchor"></a>
             <h5><a href="#debug">debug</a></h5>
@@ -64,18 +89,20 @@ spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppE
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(Boolean) Whether to print debug information to the console</p>
+                <td><p>(Boolean) Whether to print debug information to the console.  Can
+set to the special value "draw" to draw grid search positions (can
+be slow for large grids)</p>
 </td>
               </tr>
             </table>
           </section>
-          <section id="delay*">
-            <a name="//apple_ref/cpp/Variable/delay*" class="dashAnchor"></a>
-            <h5><a href="#delay*">delay*</a></h5>
+          <section id="delayOtherClick">
+            <a name="//apple_ref/cpp/Variable/delayOtherClick" class="dashAnchor"></a>
+            <h5><a href="#delayOtherClick">delayOtherClick</a></h5>
             <table>
               <tr>
                 <th>Signature</th>
-                <td><code>SplitView:delay*</code></td>
+                <td><code>SplitView:delayOtherClick</code></td>
               </tr>
               <tr>
                 <th>Type</th>
@@ -83,14 +110,28 @@ spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppE
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(Boolean) Time in seconds to delay between actions:</p>
-<ul>
-<li>delayZoomHold: How long to "hold" the zoom button down.  Defaults to 0.75s.</li>
-<li>delayOtherClick: How long to delay until clicking the other window.  Defaults to 1.0s.</li>
-<li>delayOtherHold: How long to "hold" clicking on the other window.  Defaults to 0.1s.</li>
-<li>delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 1.5s.
-Only set these variables if you are encountering failures achieving split view.  </li>
-</ul>
+                <td><p>(Float) How long in seconds to delay finding and clicking the other window
+ Defaults to 0.2s.</p>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="delayZoomHold">
+            <a name="//apple_ref/cpp/Variable/delayZoomHold" class="dashAnchor"></a>
+            <h5><a href="#delayZoomHold">delayZoomHold</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:delayZoomHold</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Variable</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>(Float) How long in seconds to "hold" the zoom button down.
+ Defaults to 0.75s.</p>
 </td>
               </tr>
             </table>
@@ -162,11 +203,12 @@ Only set these variables if you are encountering failures achieving split view. 
                 <th>Description</th>
                 <td><p>Select an application and window <em>by name</em> to enter split-view along side the currently focused window
 Useful for creating custom key bindings for specific applications and/or matching window title strings (see <code>SplitView:bindHotkeys</code>).  Also useful for calling from the command line (c.f. <code>hs.ipc.cliInstall</code>).  E.g., assuming <code>spoon.splitView</code> was assigned in your top level as in the example config above:
-  <code>hs -c "spoon.splitView.byName("Terminal","server1")</code></p>
+  <code>hs -c "spoon.splitView.byName("Terminal","server1")</code>
+would enter split view with the current window and a Terminal window with "server1" in the title.</p>
 <p>Parameters:</p>
 <ul>
-<li><code>otherapp</code>: (Optional) The (partial) name of the other window's application, or omitted/<code>nil</code> for no application filtering</li>
-<li><code>otherwin</code>: (Optional) The (partial) title of the other window, or omitted/<code>nil</code> for no window name filtering</li>
+<li><code>otherapp</code>: (Optional, String) The (partial) name of the other window's application, or omitted/<code>nil</code> for no application filtering</li>
+<li><code>otherwin</code>: (Optional, String) The (partial) title of the other window, or omitted/<code>nil</code> for no window name filtering</li>
 <li><code>noChoose</code>: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass <code>true</code> for this parameter.</li>
 </ul>
 <p>Returns:</p>
@@ -194,7 +236,34 @@ Useful for creating custom key bindings for specific applications and/or matchin
                 <td><p>Choose another window to enter split-view with current window</p>
 <p>Parameters:</p>
 <ul>
-<li><code>winChoices</code>: (Optional) A table of windows to choose from (as, e.g., provided by <code>SplitView:byName</code>).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are considered.</li>
+<li><code>winChoices</code>: (Optional) A table of windows to choose from (as, e.g., provided by <code>SplitView:byName</code>).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are offered.</li>
+</ul>
+<p>Returns:</p>
+<ul>
+<li>None</li>
+</ul>
+</td>
+              </tr>
+            </table>
+          </section>
+          <section id="removeCurrentFullScreenDesktop">
+            <a name="//apple_ref/cpp/Method/removeCurrentFullScreenDesktop" class="dashAnchor"></a>
+            <h5><a href="#removeCurrentFullScreenDesktop">removeCurrentFullScreenDesktop</a></h5>
+            <table>
+              <tr>
+                <th>Signature</th>
+                <td><code>SplitView:removeCurrentFullScreenDesktop</code></td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>Method</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td><p>Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.</p>
+<p>Parameters:</p>
+<ul>
+<li>None</li>
 </ul>
 <p>Returns:</p>
 <ul>

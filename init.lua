@@ -5,7 +5,6 @@
 --- * `SplitView` relies on the undocumented `spaces` API, and the separate accessibility ui `axuielement`; which _must_ both be installed for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces and https://github.com/asmagill/hs._asm.axuielement/, 
 --- * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires some time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables in the reference below).
 --- * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
-
 ---
 --- *Download*: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
 --- Example config in your `~/.hammerspoon/init.lua`:
@@ -22,7 +21,7 @@
 local obj = {}
 obj.__index = obj
 
---- Modules
+--::: Modules
 local hasAX, ax = pcall(require,"hs._asm.axuielement") 
 local hasSpaces, spaces = pcall(require, "hs._asm.undocumented.spaces")
 
@@ -34,19 +33,21 @@ obj.dockAX = ax.applicationElement(hs.application("Dock"))
    :searchPath({role="AXApplication"})
 local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
---- Metadata
+--::: Metadata
 obj.name = "SplitView"
 obj.version = "1.5.0"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
---- Default keys
+--::: Default keys
 local mash =      {"ctrl", "cmd"}
 local mashshift = {"ctrl", "cmd","shift"}
 obj.defaultHotkeys={choose={mash,"e"},
 		    removeDesktop={mashshift,"x"},
 		    switchFocus={mash,"x"}}
+
+--::: Methods and Local Functions
 
 --- SplitView:showImage
 --- Variable
@@ -221,8 +222,8 @@ function obj:performSplit(thiswin,otherwin)
    end)
 end
 
---- windowAtPosition
---- Internal function: use accessibility tree to find window at the given position
+-- windowAtPosition
+-- Internal function: use accessibility tree to find window at the given position
 local function windowAtPosition(...)
    local b=ax.systemElementAtPosition(...)
    if not b then return end
@@ -366,12 +367,12 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
    if self.debug then print("No match found for ",targwin) end
 end
 
---- SplitView:createSpace(screenUUID,frame,callback)
---- Internal method to create a space, working around a bug in spaces screen-based creation
---- spaces.createScreen() always creates a space on the primary screen.
---- Use accessibility, if available, as a backup option for secondary screens.
---- This method works asynchronously, and when the new space is ready,
---- calls `callback` with the new space ID.
+-- SplitView:createSpace(screenUUID,frame,callback)
+-- Internal method to create a space, working around a bug in spaces screen-based creation
+-- spaces.createScreen() always creates a space on the primary screen.
+-- Use accessibility, if available, as a backup option for secondary screens.
+-- This method works asynchronously, and when the new space is ready,
+-- calls `callback` with the new space ID.
 function obj:createSpace(scrUUID,frame,callback)
    if scrUUID==hs.screen.primaryScreen():spacesUUID() then -- simple case
       callback(spaces.createSpace()) -- always creates on primary
@@ -465,10 +466,10 @@ function obj:switchFocus()
    end
 end
 
---- SplitView:spaceButtons
---- Internal method to find the spaces Buttons at the top of Mission
---- Control using accessibility.  Invoke with MC active passing the
---- full frame of the screen of interest.
+-- SplitView:spaceButtons
+-- Internal method to find the spaces Buttons at the top of Mission
+-- Control using accessibility.  Invoke with MC active passing the
+-- full frame of the screen of interest.
 function obj:spaceButtons(frame)
    local spaceAX=self.dockAX:searchPath({	-- a list of space controls for each screen
 	 {role="AXGroup",identifier="mc"},

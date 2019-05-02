@@ -16,4 +16,4 @@
 ## API Documentation
 | Module                                                             | Description           |
 | ------------------------------------------------------------------ | --------------------- |
-| [SplitView](SplitView.md)                          | *Open two windows side by side in SplitView.*  Select by name and/or using a popup.  Also provides focus toggling between splitview "halves".     |
+| [SplitView](SplitView.md)                          | *Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.     |
