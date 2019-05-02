@@ -1,19 +1,23 @@
 --- === SplitView ===
 ---
---- *Open two windows side by side in SplitView.*  Select by name and/or using a popup.  Also provides focus toggling between splitview "halves".
+--- *Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.
 --- Important points:
---- * `SplitView` Relies on the undocumented `spaces` API, which _must_ be installed separately for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces
---- * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires hand tuned time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables, below).
+--- * `SplitView` relies on the undocumented `spaces` API, and the separate accessibility ui `axuielement`; which _must_ both be installed for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces and https://github.com/asmagill/hs._asm.axuielement/, 
+--- * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires some time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables in the reference below).
 --- * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
---- * If there is only a single space, `SplitView` creates _and does not remove_ a new, empty space for temporarily holding unwanted windows from the same application(s).  This space can safely be deleted, but will recur on future invocations.
+
 ---
 --- *Download*: [https://github.com/Hammerspoon/Spoons/raw/master/Spoons/SplitView.spoon.zip]
 --- Example config in your `~/.hammerspoon/init.lua`:
 --- ```
 --- mash =      {"ctrl", "cmd"}
 --- mashshift = {"ctrl", "cmd","shift"}
---- hs.loadSpoon("SplitView")
---- spoon.SplitView:bindHotkeys({choose={mash,"s"},switchFocus={mash,"x"},chooseAppEmacs={mash,"e","Emacs"}})
+--- hs.loadSpoon("SplitView",true) -- add to global, so we can access from command line
+--- spoon.SplitView:bindHotkeys({choose={mash,"e"},
+--- 			     chooseAppEmacs={mashshift,"e","Emacs"},
+--- 			     chooseAppWin130={mashshift,"o","Terminal","130"},
+--- 			     switchFocus={mash,"x"},
+--- 			     removeDesktop={mashshift,"x"}})
 --- ```
 local obj = {}
 obj.__index = obj
@@ -22,9 +26,17 @@ obj.__index = obj
 local hasAX, ax = pcall(require,"hs._asm.axuielement") 
 local hasSpaces, spaces = pcall(require, "hs._asm.undocumented.spaces")
 
+if not (hasSpaces and hasAX) then
+   print("hs._asm.undocumented.spaces + hs._asm.axuielement are required for SplitView; please install")
+   return nil
+end
+obj.dockAX = ax.applicationElement(hs.application("Dock"))
+   :searchPath({role="AXApplication"})
+local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
+
 --- Metadata
 obj.name = "SplitView"
-obj.version = "1.0.2"
+obj.version = "1.5.0"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
@@ -43,24 +55,31 @@ obj.showImage = true
 
 --- SplitView:debug
 --- Variable
---- (Boolean) Whether to print debug information to the console
+--- (Boolean) Whether to print debug information to the console.  Can
+--- set to the special value "draw" to draw grid search positions (can
+--- be slow for large grids)
 obj.debug = false
 
---- SplitView:delay*
+--- SplitView:delayZoomHold
 --- Variable
---- (Boolean) Time in seconds to delay between actions:
----  * delayZoomHold: How long to "hold" the zoom button down.  Defaults to 0.75s.
----  * delayOtherClick: How long to delay until clicking the other window.  Defaults to 1.0s.
----  * delayOtherHold: How long to "hold" clicking on the other window.  Defaults to 0.1s.
----  * delayRestoreWins: How long to delay until restoring window and unhiding apps on the original space.  Defaults to 1.5s.
---- Only set these variables if you are encountering failures achieving split view.  
+--- (Float) How long in seconds to "hold" the zoom button down.
+---  Defaults to 0.75s.
 obj.delayZoomHold = 0.75
-obj.delayOtherClick = 1.0
-obj.delayOtherHold = 0.1
-obj.delayRestoreWins = 1.5
+
+--- SplitView:delayOtherClick
+--- Variable
+--- (Float) How long in seconds to delay finding and clicking the other window
+---  Defaults to 0.2s.
+obj.delayOtherClick = 0.2
+
+--- SplitView:checkInterval
+--- Variable
+--- (Float) Time interval in seconds to check for MC/SplitView animations to complete
+obj.checkInterval = 0.1
+
 
 -- Internal Function
-function _getGoodFocusedWindow(nofull)
+local function getGoodFocusedWindow(nofull)
    local win = hs.window.focusedWindow()
    if not win or not win:isStandard() then return end
    if nofull and win:isFullScreen() then return end
@@ -72,37 +91,44 @@ end
 --- Choose another window to enter split-view with current window
 ---
 --- Parameters:
----  * `winChoices`: (Optional) A table of windows to choose from (as, e.g., provided by `SplitView:byName`).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are considered.
+---  * `winChoices`: (Optional) A table of windows to choose from (as, e.g., provided by `SplitView:byName`).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are offered.
 ---
 --- Returns:
 ---  * None
 function obj:choose(winChoices)
-   if not hasSpaces then
-      print("hs._asm.undocumented.spaces is required for SplitView; please install")
-      return
-   end
- 
-   local win = _getGoodFocusedWindow()
+   local win = getGoodFocusedWindow()
    if not win then return end
    local choices={}
 
    if winChoices then		-- Make sure not to include focused win
-      winChoices=hs.fnutils.filter(winChoices,function(w) return w~=win end)
+      winChoices=hs.fnutils.filter(winChoices,
+				   function(w)
+				      return w:isStandard() and w~=win and not w:isFullScreen()
+      end)
    else
-      winChoices=win:otherWindowsSameScreen()
+      winChoices=hs.fnutils.filter(win:otherWindowsSameScreen(),
+				   function(w) return w:isStandard() and not w:isFullScreen()
+      end)
    end
+   if not winChoices or #winChoices==0 then
+      if self.debug then
+	 print("No other window to utilize for Split")
+      end
+      return
+   end 
    if #winChoices==1 then
+      if self.debug then
+	 print("Obvious split: ",win,winChoices[1])
+      end 
       self:performSplit(win,winChoices[1])
       return self
    end
    for _,w in pairs(winChoices) do
-      if w:isStandard() and not w:isFullScreen() then
-	 local choice={text=w:title(),
-		       subText=w:application():title(),
-		       wid=w:id()}
-	 if self.showImage then choice.image=w.snapshotForID(w:id()) end
-	 table.insert(choices,choice)
-      end
+      local choice={text=w:title(),
+		    subText=w:application():title(),
+		    wid=w:id()}
+      if self.showImage then choice.image=w.snapshotForID(w:id()) end
+      table.insert(choices,choice)
    end
 
    if not choices then return self end
@@ -129,26 +155,23 @@ end
 --- Select an application and window _by name_ to enter split-view along side the currently focused window
 --- Useful for creating custom key bindings for specific applications and/or matching window title strings (see `SplitView:bindHotkeys`).  Also useful for calling from the command line (c.f. `hs.ipc.cliInstall`).  E.g., assuming `spoon.splitView` was assigned in your top level as in the example config above:
 ---   `hs -c "spoon.splitView.byName("Terminal","server1")`
+--- would enter split view with the current window and a Terminal window with "server1" in the title.
 ---
 --- Parameters:
----  * `otherapp`: (Optional) The (partial) name of the other window's application, or omitted/`nil` for no application filtering
----  * `otherwin`: (Optional) The (partial) title of the other window, or omitted/`nil` for no window name filtering
+---  * `otherapp`: (Optional, String) The (partial) name of the other window's application, or omitted/`nil` for no application filtering
+---  * `otherwin`: (Optional, String) The (partial) title of the other window, or omitted/`nil` for no window name filtering
 ---  * `noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.
 ---
 --- Returns:
 ---  * None
 function obj:byName(otherapp,otherwin,noChoose)
-   if not hasSpaces then
-      print("hs._asm.undocumented.spaces is required for SplitView; please install")
-      return
-   end
-   local win = _getGoodFocusedWindow()
+   local win = getGoodFocusedWindow()
    if not win then return end
    local selectWins={}
 
    if(win:isFullScreen()) then
       win:setFullScreen(false)
-      hs.timer.usleep(1e6)
+      return
    end
 
    if otherapp then otherapp=hs.application.find(otherapp) end 
@@ -178,133 +201,206 @@ function obj:byName(otherapp,otherwin,noChoose)
 end
 
 --  Internal function to perform the simulated split view
---  Splitview two windows as follows:
---    Find all the unrelated applications, and hide them
---    Find all the other windows of the same application, and send them to an adjacent space
---    Move the first window the top left of the current screen
---    Move the 2nd window to occupy the center of the right half of the screen
---    Click on the zoom button for 0.75 second, then release it (activating split screen)
---    Click in the middle of the right hand side of the screen (which will contain the window of interest)
---    Unhide all hidden applications, and return windows from the adjacent screen to their original space
+--  for two input windows
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
-   local hsee=hs.eventtap.event
-   hs.window.animationDuration=0
-
-   local screen=thiswin:screen()
-   local frame=screen:fullFrame()
-   local thisapp,otherapp=thiswin:application(),otherwin:application()
-
-   local appsToHide, winsToTeleport={},{}
-   local thisSpace=nil
-
-   local filter=hs.window.filter.new()
-   filter:setScreens(screen:id())
-   local wins=filter:getWindows()
-   filter:pause()
-   for _,w in pairs(wins) do
-      local wa=w:application()
-      if w~=thiswin and w~=otherwin and w:id() and w:isVisible() and not w:isMinimized() then
-   	 if (wa==thisapp and w~=thiswin) or (wa==otherapp and w~=otherwin) then
-   	    winsToTeleport[w:id()]=w -- same app, but different window, teleport it
-   	 end
-      end 
-      if (wa~=thisapp and wa~=otherapp) then appsToHide[wa:pid()]=wa end
-   end
-
-   -- Hide and/or remove everything else
-   for _,ah in pairs(appsToHide) do
-      if self.debug then print("Hiding ",ah:name()) end
-      ah:hide() 
-   end
-
-   local thisSpace
-   if next(winsToTeleport)~=nil then
-      local uuid=screen:spacesUUID()
-      thisSpace=spaces.spacesByScreenUUID(spaces.masks.currentSpaces)[uuid][1]
-
-      local toSpace=hs.fnutils.find(spaces.layout()[uuid], 
-				    function(x) -- first other user space
-				       return spaces.spaceType(x)==spaces.types.user and
-				       x~=thisSpace end)
-      if not toSpace then
-	 toSpace=self:createSpace(uuid,frame)
-      end
-      for _,wm in pairs(winsToTeleport) do
-	 if self.debug then print("Teleporting: ",wm:title()) end
-	 wm:spacesMoveTo(toSpace)
-      end
-   end
-
-
-   -- Ugly nested timing.  If we had to open MC to create a new desktop (secondary displays)
-   -- and the timer for hitting "ESCAPE" at the end is still running, wait for it
-   -- to complete, otherwise proceed.  Then, if it was running, wait for a
-   -- bit of additional time to let MC exit.  Then proceed to move the
-   -- window, long-click the zoom button, and, after another delay
-   -- click the RHS of the screen, and, after one more delay, restore
-   -- all the hidden apps and teleported windows.
-   local escapeTimerWasRunning=self.escapeTimer and self.escapeTimer:running()
-   hs.timer.waitUntil(
-      function()
-	 return not self.escapeTimer or not self.escapeTimer:running()
-      end,
-      function()
-	 hs.timer.doAfter(escapeTimerWasRunning and .5 or 0,
-			  function()
-			     thiswin:setTopLeft(frame.x,frame.y)
-			     local wsz=otherwin:size()  -- move to RHS for click target
-			     otherwin:setTopLeft(frame.x+frame.w/2+(frame.w/2-wsz.w)/2,
-						 frame.y+(frame.h-wsz.h)/2)
-			     
-			     local clickPoint = thiswin:zoomButtonRect()
-			     hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
-			     hs.timer.doAfter(self.delayZoomHold, function()
-						 hsee.newMouseEvent(hsee.types.leftMouseUp,clickPoint):post()
-						 hs.timer.doAfter(self.delayOtherClick,
-								  function()
-								     local otherclick={x=frame.x+frame.w*3/4,
-										       y=frame.y+frame.h/2}
-								     hsee.newMouseEvent(hsee.types.leftMouseDown,otherclick):post()
-								     hs.timer.doAfter(self.delayOtherHold,function()
-											 hsee.newMouseEvent(hsee.types.leftMouseUp,otherclick):post()
-											 hs.timer.doAfter(self.delayRestoreWins,function()
-													     for _,ah in pairs(appsToHide) do ah:unhide() end
-													     for _,w in pairs(winsToTeleport) do w:spacesMoveTo(thisSpace) end
-											 end)
-								     end)
-						 end)
-			     end)
-	 end)
-      end, 0.1)
+   local clickPoint=thiswin:zoomButtonRect()
+   hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
+   hst.doAfter(self.delayZoomHold, -- hold green button to activate SV!
+	       function()
+		  hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post() 
+		  hst.waitUntil(
+		     function () return thiswin:isFullscreen() end,
+		     function ()
+			hst.doAfter(self.delayOtherClick,
+				    function()
+				       local pos=self:findMiniSplitViewWindow(thiswin,otherwin)
+				       if pos then hse.leftClick(pos) end
+			end)
+		  end)
+   end)
 end
 
---- SplitView:createSpace(screen)
---- Internal method to create a space, working around a bug in spaces screen-based creation
-function obj:createSpace(scrUUID,frame)
-   if scrUUID==hs.screen.primaryScreen():spacesUUID() then
-      return spaces.createSpace() -- always creates on primary
+--- windowAtPosition
+--- Internal function: use accessibility tree to find window at the given position
+local function windowAtPosition(...)
+   local b=ax.systemElementAtPosition(...)
+   if not b then return end
+   if b:role()~="AXWindow" then
+      if b.window then b=b:window() else return end
    end
+   return b:asHSWindow()
+end 
 
-   if not hasAX then
-      print("Creating a space on a non-primary display requires hs._asm.axuielement")
-      return nil
+-- SplitView:findSafeDither:
+-- Internal Method: Find a safe position near a position to click
+-- SplitView mini windows have a several pixel buffer around them,
+-- where systemElementAtPosition() sees the window, but the window is not
+-- highlighted.  So use this to probe a 3x3 grid around the found
+-- location to look for edges or corners, and select a "safe" point
+-- interior to the edge or corner.  The spacing between grid positions
+-- must be larger than the width of this "spurious boundary" (so you
+-- can't have two hits within it along any direction ).  For very
+-- small windows this dither refinement can fail; in that case just
+-- return the original coordinates and hope for the best.
+function obj:findSafeDither(x,y,targ,targwin)
+   local hits={ [-1]={}, [0]={}, [1]={} } -- 3x3 array indexed by -1,0,1
+   local hitCnt=0
+   local dither=7
+   for offy=-1,1,1 do
+      local yd=y + dither*offy
+      for offx=-1,1,1 do
+	 if offx~=0 or offy~=0 then -- skip the middle, it's good
+	    local xd=x + dither*offx
+	    if not hs.geometry(xd,yd):inside(targ) then
+	       hits[offx][offy]=false -- fell off
+	    else
+	       local dwin=windowAtPosition(xd,yd) -- still on?
+	       hits[offx][offy]=(dwin and dwin==targwin)
+	    end
+	    hitCnt=hitCnt + (hits[offx][offy] and 1 or 0)
+	 end
+      end
+   end
+   if     hitCnt==8 then return x,y -- full coverage, take original
+   elseif hitCnt==5 then -- edge, take center of the good side
+      for _,p in pairs({{0,-1},{1,0},{0,1},{-1,0}}) do
+	 if not hits[-p[1]][-p[2]] then -- opposite side out
+	    return x + p[1]*dither,y + p[2]*dither
+	 end 
+      end
+   elseif hitCnt==3 then -- corner: take good interior corner
+      for offx=-1,1,2 do for offy=-1,1,2 do -- take the good corner
+	    if hits[offx][offy] then
+	       return x + offx*dither,y + offy*dither
+	    end
+      end end
+   else -- Window too small, just hope for the best
+      if self.debug then 
+	 print("No refinement found.  Canceling Dither.  Hit Count: ",hitCnt)
+      end 
+      return x,y
+   end 
+end
+
+-- SplitView:findMiniSplitViewWindow
+-- Internal Method: Find a mini-representation of target window by
+-- tiling the screen and querying for accessibility entities there.
+-- Must be called after split view mini-window animation completes.
+function obj:findMiniSplitViewWindow(thiswin,targwin)
+   local t=hs.timer.absoluteTime()
+   local frame=thiswin:screen():fullFrame()
+   local targ=hs.geometry(frame.x,frame.y,frame.w/2,frame.h)			 
+   if thiswin:frame().x==frame.x then targ.x=targ.x + frame.w/2 end -- search RHS
+   
+   local wcnt=#thiswin:otherWindowsSameScreen() -- total windows to tile
+   local n,m
+   local minx=6
+   n=math.max(math.ceil(math.sqrt(targ.w/targ.h * wcnt)) * 2, minx)
+   m=math.max(math.ceil(targ.h/targ.w * minx),math.ceil(10*targ.h/targ.w))
+
+   if self.debug then
+      print(string.format("SplitView: Tiling %d windows over\n\t%s\nwith a grid of %d x %d",
+			  wcnt,frame,n,m))
+   end 
+
+   local cnt=0
+   local jigStep,jiggleSet=0.5, {{0.5,0.5}}
+   while true do
+      for _,jiggle in pairs(jiggleSet) do 
+	 for i=1,n do
+	    for j=1,m do
+	       local circ
+	       local x=targ.x+(i-jiggle[1])*targ.w/n 
+	       local y=targ.y+(j-jiggle[2])*targ.h/m
+	       cnt=cnt+1
+	       
+	       if self.debug=="draw" then
+		  circ = hs.drawing.circle(hs.geometry.rect(x-6, y-6, 12, 12))
+		  circ:setFillColor({["red"]=1,["blue"]=0,["green"]=0,["alpha"]=0.5})
+		  circ:show()
+		  hst.doAfter(5,function() circ:delete() end)
+	       end 
+	       
+	       local win=windowAtPosition(x,y)
+	       if win and win==targwin then
+		  if self.debug then
+		     print(string.format("Searched %d locations, matched at x=%0.1f, y=%0.1f"..
+					    " (jiggle %0f,%0f)",
+					 cnt,x,y,jiggle[1],jiggle[2]))
+		     if self.debug=="draw" then 
+			circ:setFillColor({["red"]=0,["blue"]=0,["green"]=1,["alpha"]=0.5})
+			circ:show()
+		     end 
+		  end
+		  newx,newy=self:findSafeDither(x,y,targ,targwin) -- take care of edge cases
+		  if self.debug and (x~=newx or y~=newy) then
+		     print(string.format("Dither-Refined to x=%0.1f, y=%0.1f",newx,newy))
+		     if self.debug=="draw" then 
+			circ:setTopLeft(x-6,y-6)
+			circ:setFillColor({["red"]=0,["blue"]=1,["green"]=1,["alpha"]=0.5})
+			circ:show()
+		     end 
+		  end
+		  if self.debug then
+		     print(string.format("Completed in %0.3fs",(hs.timer.absoluteTime()-t)/1e9))
+		  end
+		  if newx and newy then return {x=newx,y=newy} end 
+	       end
+	    end
+	 end
+      end
+      if self.debug then
+	 print(string.format("Failed to match at jiggle %0f, refining by a factor of 2.",jigStep))
+      end
+      jigStep=jigStep/2
+      jiggleSet=hs.fnutils.mapCat(jiggleSet,-- refine grid
+				  function(p)
+				     local t={}
+				     for x=-1,1,2 do for y=-1,1,2 do
+					   table.insert(t,{p[1]+x*jigStep,p[2]+y*jigStep})
+				     end end
+				     return t
+      end)
+   end 
+   if self.debug then print("No match found for ",targwin) end
+end
+
+--- SplitView:createSpace(screenUUID,frame,callback)
+--- Internal method to create a space, working around a bug in spaces screen-based creation
+--- spaces.createScreen() always creates a space on the primary screen.
+--- Use accessibility, if available, as a backup option for secondary screens.
+--- This method works asynchronously, and when the new space is ready,
+--- calls `callback` with the new space ID.
+function obj:createSpace(scrUUID,frame,callback)
+   if scrUUID==hs.screen.primaryScreen():spacesUUID() then -- simple case
+      callback(spaces.createSpace()) -- always creates on primary
+      return
    end
 
    hs.application.open("Mission Control")
    local layout=spaces.layout()[scrUUID]
-   local spaceButtons, newSpaceButton=self:spaceButtons(frame)
+   local spaces, newSpaceButton=self:spaceButtons(frame)
+   if not newSpaceButton then return end
+   
+   newSpaceButton:doPress();
 
-   local newSpace
-   if newSpaceButton then 
-      newSpaceButton:doPress();
-      local layoutRev={}
-      for _,v in pairs(layout) do layoutRev[v]=true end
-      newSpace=hs.fnutils.find(spaces.layout()[scrUUID],
-			       function(x) return not layoutRev[x] end)
-   end 
-   self.escapeTimer=hs.timer.doAfter(0.3,function() hs.eventtap.keyStroke({},"ESCAPE") end)
-   return(newSpace)
+   -- Find the new space id
+   local layoutRev={}
+   for _,v in pairs(layout) do layoutRev[v]=true end
+   local newSpace=hs.fnutils.find(spaces.layout()[scrUUID],
+				  function(x) return not layoutRev[x] end)
+   -- Wait for new button
+   hst.waitUntil(
+      function() return #self:spaceButtons(frame) > #spaces end,
+      function()
+	 local prop=ax.windowElement(self.thiswin)
+	 hse.keyStroke({},"ESCAPE")
+	 hst.waitWhile( 
+	    function() return self:spaceButtons(frame) end,
+	    function() callback(newSpace) end, self.checkInterval)
+      end,self.checkInterval)
+   return
 end 
 
 
@@ -320,7 +416,7 @@ obj.timer=nil
 --- Returns:
 ---  * None
 function obj:switchFocus()
-   local win = _getGoodFocusedWindow()
+   local win = getGoodFocusedWindow()
    if not win or not win:isFullScreen() then return end
    local others=win:otherWindowsSameScreen()
    for _, wto in ipairs(others) do
@@ -354,7 +450,7 @@ function obj:switchFocus()
 	 local animSteps=1
 	 local deltaX=(left and -1 or 1) * txtSize.w/12
 	 self.arrow:show()
-	 self.timer=hs.timer.doUntil(function() return animSteps>=15 end,
+	 self.timer=hst.doUntil(function() return animSteps>=15 end,
 	    function()
 	       animSteps=animSteps+1
 	       rect.x=rect.x+deltaX
@@ -369,11 +465,12 @@ function obj:switchFocus()
    end
 end
 
--- invoke with MC active
+--- SplitView:spaceButtons
+--- Internal method to find the spaces Buttons at the top of Mission
+--- Control using accessibility.  Invoke with MC active passing the
+--- full frame of the screen of interest.
 function obj:spaceButtons(frame)
-   dock = ax.applicationElement(hs.application("Dock"))
-   local spaceAX=dock:searchPath({	-- a list of space controls for each screen
-	 {role="AXApplication"},
+   local spaceAX=self.dockAX:searchPath({	-- a list of space controls for each screen
 	 {role="AXGroup",identifier="mc"},
 	 {role="AXGroup",identifier="mc.display"},
 	 {role="AXGroup",identifier="mc.spaces"}})
@@ -391,12 +488,17 @@ function obj:spaceButtons(frame)
    end
    return spaceButtons, newSpaceButton
 end 
-	    
+
+--- SplitView:removeCurrentFullScreenDesktop
+--- Method
+--- Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
 function obj:removeCurrentFullScreenDesktop()
-   if not hasAX or not hasSpaces then
-      print("removeDesktop requires hs._asm.axuielement and hs._asm.undocumented.spaces")
-      return
-   end
    -- screen with cursor in it
    local frame, screen
    local cursor=hs.mouse.getAbsolutePosition()
@@ -404,7 +506,7 @@ function obj:removeCurrentFullScreenDesktop()
       frame=s:fullFrame()
       if cursor.x >= frame.x and cursor.x<frame.x + frame.w and
       cursor.y >= frame.y and cursor.y<frame.y + frame.h then
-	 screen=s  
+	 screen=s  		-- screen holding our cursor
 	 break
       end
    end
@@ -418,8 +520,8 @@ function obj:removeCurrentFullScreenDesktop()
    -- Open Mission control and determine layout
    hs.application.open("Mission Control")
    local layout=spaces.layout()[scrID]
-   local toSpace=hs.fnutils.find(layout,function(x) -- first user space in layout
-				    return spaces.spaceType(x)==spaces.types.user end)
+   -- local toSpace=hs.fnutils.find(layout,function(x) -- first user space in layout
+   -- 				    return spaces.spaceType(x)==spaces.types.user end)
    local spaceOrder={} 
    for k,v in ipairs(layout) do spaceOrder[v]=k end
 
@@ -428,17 +530,19 @@ function obj:removeCurrentFullScreenDesktop()
    if not spaceButtons then return end
    
    local closeSpace=spaceButtons[spaceOrder[space]]
-   toSpace=spaceButtons[spaceOrder[toSpace]]
+   -- toSpace=spaceButtons[spaceOrder[toSpace]]
    
-   hs.timer.waitUntil( -- wait for MC to finish loading and set AX properties
-      function() return closeSpace.doRemoveDesktop end, -- test
-      function ()		-- action
+   hst.waitUntil( -- wait for MC to finish loading and set AX properties
+      function()
+	 return closeSpace.doRemoveDesktop
+      end, 
+      function ()
 	 if self.debug then
-	    print("Closing: ",closeSpace:description()," and Pressing: ",toSpace:description())
+	    print("Closing: ",closeSpace:description())--," and Pressing: ",toSpace:description())
 	 end
 	 closeSpace:doRemoveDesktop()
-	 if toSpace.doPress then hs.timer.doAfter(.5,function() toSpace:doPress() end) end 
-      end,.05)
+	 hse.keyStroke({},"ESCAPE")	 
+      end,self.checkInterval)
 end
 
 --- SplitView:bindHotkeys(mapping)
@@ -480,12 +584,6 @@ function obj:bindHotkeys(mapping)
       end
    end
 
-   if self.debug then
-      print("DEF:")
-      for k,v in pairs(def) do print(k,v) end
-      print("MAPPING:")
-      for k,v in pairs(mapping) do for l,m in pairs(v) do print(k,l,m) end end
-   end 
    hs.spoons.bindHotkeysToSpec(def, mapping)
 end
 
