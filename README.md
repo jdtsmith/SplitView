@@ -16,7 +16,7 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
 			     chooseAppEmacs={mashshift,"e","Emacs"},
 			     chooseAppWin130={mashshift,"o","Terminal","130"},
 			     switchFocus={mash,"x"},
-				 swapWindows={mashshift,"X"},
+                             swapWindows={mashshift,"X"},
 			     removeDesktop={mashshift,"k"}})
 ```
 
