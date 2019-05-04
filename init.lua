@@ -143,7 +143,9 @@ function obj:choose(winChoices)
 	 end 
    end)
 
-   -- chooser:placeholderText("SplitView with " .. win:application():title() .. "/" .. win:title()
+   if chooser.placeholderText then
+      chooser:placeholderText("SplitView with " .. win:application():title() .. ":" .. win:title())
+   end
    chooser:choices(choices)
    chooser:searchSubText(true)
    chooser:subTextColor({hex="#424"})
