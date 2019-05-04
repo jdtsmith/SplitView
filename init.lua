@@ -329,7 +329,7 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
 	       if win and win==targwin then
 		  if self.debug then
 		     print(string.format("Searched %d locations, matched at x=%0.1f, y=%0.1f"..
-					    " (jiggle %0f,%0f)",
+					    " (jiggle %0.3f,%0.3f)",
 					 cnt,x,y,jiggle[1],jiggle[2]))
 		     if self.debug=="draw" then 
 			circ:setFillColor({["red"]=0,["blue"]=0,["green"]=1,["alpha"]=0.5})
@@ -354,10 +354,11 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
 	 end
       end
       if self.debug then
-	 print(string.format("Failed to match at jiggle %0f, refining by a factor of 2.",jigStep))
+	 print(string.format("Failed to match at jiggle %0f, increasing resolution by a factor of 2.",
+			     jigStep))
       end
       jigStep=jigStep/2
-      jiggleSet=hs.fnutils.mapCat(jiggleSet,-- refine grid
+      jiggleSet=hs.fnutils.mapCat(jiggleSet,-- offset and refine jiggle grid
 				  function(p)
 				     local t={}
 				     for x=-1,1,2 do for y=-1,1,2 do
@@ -470,7 +471,7 @@ end
 
 -- SplitView:spaceButtons
 -- Internal method to find the spaces Buttons at the top of Mission
--- Control using accessibility.  Invoke with MC active passing the
+-- Control using accessibility.  Invoke with MC active, passing the
 -- full frame of the screen of interest.
 function obj:spaceButtons(frame)
    local spaceAX=self.dockAX:searchPath({	-- a list of space controls for each screen
