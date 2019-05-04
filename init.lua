@@ -493,6 +493,67 @@ function obj:spaceButtons(frame)
    return spaceButtons, newSpaceButton
 end 
 
+
+--- SplitView:swapWindows
+--- Method
+--- Swap the two spaces in a full screen split view
+---
+--- Parameters:
+---  * None
+---
+--- Returns:
+---  * None
+function obj:swapWindows()
+   local mousePos=hs.mouse.getAbsolutePosition()
+   local win = getGoodFocusedWindow()
+   local screen=win:screen()
+   local frame=screen:frame()
+   local ff=screen:fullFrame()
+
+   if win:topLeft().x~=frame.x or not win:isFullScreen() then 
+      win=hs.fnutils.find(win:otherWindowsSameScreen(),
+			  function(w)
+			     return w:isFullScreen() and w:topLeft().x==frame.x
+      end)
+   end
+
+   local wframe=win:frame()
+   if not win or not win:isFullScreen() then return end
+
+   local x,y=wframe.x + wframe.w/2 , frame.y + 2
+
+   clickPoint = win:zoomButtonRect()
+
+   local alreadyDown=clickPoint.y >= frame.y
+   local mm=hsee.newEvent():setType(hsee.types.mouseMoved)
+   -- Move along top to make the menubar visible
+   if not already_down then mm:location({x=x,y=ff.y}):post() end
+
+   local oldy
+   hst.waitUntil(
+      function() -- wait until the clickPoint settles
+	 if alreadyDown then return true end
+	 local cp = win:zoomButtonRect()
+	 local good=cp.y >= frame.y and cp.y ~= clickPoint.y and oldy and cp.y==oldy
+	 oldy=cp.y
+	 return good
+      end,
+      function()
+	 hsee.newMouseEvent(hsee.types.leftMouseDown,{x=x,y=y}):post()
+	 hst.doAfter(self.checkInterval,
+		     function()
+			local dragEV=hsee.newEvent():setType(hsee.types.leftMouseDragged)
+			for i=0,4,1 do
+			   dragEV:location({x=x+i*frame.w/8,y=y}):post()
+			end
+			hsee.newMouseEvent(hsee.types.leftMouseUp,{x=x+frame.w/2,y=y}):post()
+			hst.doAfter(.4,function()
+				       mm:location(mousePos):post()
+			end)
+	 end)
+      end, self.checkInterval)
+end
+
 --- SplitView:removeCurrentFullScreenDesktop
 --- Method
 --- Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.
@@ -565,7 +626,8 @@ function obj:bindHotkeys(mapping)
    local def = {
       choose = hs.fnutils.partial(self.choose, self),
       switchFocus = hs.fnutils.partial(self.switchFocus, self),
-      removeDesktop = hs.fnutils.partial(self.removeCurrentFullScreenDesktop,self)
+      removeDesktop = hs.fnutils.partial(self.removeCurrentFullScreenDesktop, self),
+      swapWindows = hs.fnutils.partial(self.swapSpaces, self)
    }
    for k,v in pairs(mapping) do
       if k:sub(1,6)=="choose" and #k>6 then
