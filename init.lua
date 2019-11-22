@@ -40,6 +40,9 @@ obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
+local ret, ver = hs.applescript("system version of (system info)")
+obj.osversion = ver
+
 --::: Default keys
 local mash =      {"ctrl", "cmd"}
 local mashshift = {"ctrl", "cmd","shift"}
@@ -203,6 +206,18 @@ function obj:byName(otherapp,otherwin,noChoose)
    self:choose(selectWins)
 end
 
+-- windowAtPosition
+-- Internal function: use accessibility tree to find window at the given position
+local function windowAtPosition(...)
+   local b=ax.systemElementAtPosition(...)
+   if not b then return end
+   if b:role()~="AXWindow" then
+      if b.window then b=b:window() else return end
+   end
+   return b and b:asHSWindow()
+end 
+
+
 --  Internal function to perform the simulated split view
 --  for two input windows
 function obj:performSplit(thiswin,otherwin)
@@ -211,6 +226,23 @@ function obj:performSplit(thiswin,otherwin)
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
    hst.doAfter(self.delayZoomHold, -- hold green button to activate SV!
 	       function()
+		  if self.osversion >= "10.15" then -- deal with new popup pane
+		     local menu, tileLeft=ax.systemElementAtPosition(clickPoint)[1] -- 1st child of zoom button!
+		     for _,child in ipairs(menu) do
+			if child:role() == "AXMenuItem" and child:identifier():find("tileLeft") then
+			   tileLeft=child
+			   break
+			end 
+		     end
+		     if tileLeft then
+			local frame=tileLeft:frame()
+			clickPoint.x=frame.x+frame.w/2
+			clickPoint.y=frame.y+frame.h/2
+		     else 
+			clickPoint.y = clickPoint.y + 65 -- hope for best
+		     end 
+		     hsee.newMouseEvent(hsee.types.mouseMoved,clickPoint):post()
+		  end
 		  hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post() 
 		  hst.waitUntil(
 		     function () return thiswin:isFullscreen() end,
@@ -224,16 +256,6 @@ function obj:performSplit(thiswin,otherwin)
    end)
 end
 
--- windowAtPosition
--- Internal function: use accessibility tree to find window at the given position
-local function windowAtPosition(...)
-   local b=ax.systemElementAtPosition(...)
-   if not b then return end
-   if b:role()~="AXWindow" then
-      if b.window then b=b:window() else return end
-   end
-   return b:asHSWindow()
-end 
 
 -- SplitView:findSafeDither:
 -- Internal Method: Find a safe position near a position to click
