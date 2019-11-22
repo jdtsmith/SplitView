@@ -509,7 +509,9 @@ function obj:swapWindows()
    local screen=win:screen()
    local frame=screen:frame()
    local ff=screen:fullFrame()
-
+   if self.debug then
+      print("Swapping Windows...")
+   end 
    if win:topLeft().x~=frame.x or not win:isFullScreen() then 
       win=hs.fnutils.find(win:otherWindowsSameScreen(),
 			  function(w)
@@ -627,7 +629,7 @@ function obj:bindHotkeys(mapping)
       choose = hs.fnutils.partial(self.choose, self),
       switchFocus = hs.fnutils.partial(self.switchFocus, self),
       removeDesktop = hs.fnutils.partial(self.removeCurrentFullScreenDesktop, self),
-      swapWindows = hs.fnutils.partial(self.swapSpaces, self)
+      swapWindows = hs.fnutils.partial(self.swapWindows, self)
    }
    for k,v in pairs(mapping) do
       if k:sub(1,6)=="choose" and #k>6 then
