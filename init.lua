@@ -239,8 +239,8 @@ end
 -- Internal Method: Find a safe position near a position to click
 -- SplitView mini windows have a several pixel buffer around them,
 -- where systemElementAtPosition() sees the window, but the window is not
--- highlighted.  So use this to probe a 3x3 grid around the found
--- location to look for edges or corners, and select a "safe" point
+-- highlighted or clickable.  So use this to probe a 3x3 grid around
+-- the found location to look for edges or corners, and select a "safe" point
 -- interior to the edge or corner.  The spacing between grid positions
 -- must be larger than the width of this "spurious boundary" (so you
 -- can't have two hits within it along any direction ).  For very
@@ -290,21 +290,20 @@ end
 -- Internal Method: Find a mini-representation of target window by
 -- tiling the screen and querying for accessibility entities there.
 -- Must be called after split view mini-window animation completes.
+-- Keeps refining the tiling onto smaller grids until a window is found
 function obj:findMiniSplitViewWindow(thiswin,targwin)
    local t=hs.timer.absoluteTime()
    local frame=thiswin:screen():fullFrame()
-   local targ=hs.geometry(frame.x,frame.y,frame.w/2,frame.h)			 
+   local targ=hs.geometry(frame.x,frame.y,frame.w/2,frame.h) -- LHS by default
    if thiswin:frame().x==frame.x then targ.x=targ.x + frame.w/2 end -- search RHS
    
    local wcnt=#thiswin:otherWindowsSameScreen() -- total windows to tile
-   local n,m
-   local minx=6
-   n=math.max(math.ceil(math.sqrt(targ.w/targ.h * wcnt)) * 2, minx)
-   m=math.max(math.ceil(targ.h/targ.w * minx),math.ceil(10*targ.h/targ.w))
+   local n=5 -- starting nxm grid of points
+   local m=math.ceil(targ.h/targ.w * n)
 
    if self.debug then
-      print(string.format("SplitView: Tiling %d windows over\n\t%s\nwith a grid of %d x %d",
-			  wcnt,frame,n,m))
+      print(string.format("SplitView: Tiling %d windows with initial %d x %d grid",
+			  wcnt,n,m))
    end 
 
    local cnt=0
