@@ -73,6 +73,21 @@
         "type": "Method"
       },
       {
+        "def": "SplitView:swapWindows",
+        "desc": "Swap the two spaces in a full screen split view",
+        "doc": "Swap the two spaces in a full screen split view\n\nParameters:\n * None\n\nReturns:\n * None",
+        "name": "swapWindows",
+        "parameters": [
+          " * None"
+        ],
+        "returns": [
+          " * None"
+        ],
+        "signature": "SplitView:swapWindows",
+        "stripped_doc": "",
+        "type": "Method"
+      },
+      {
         "def": "SplitView:switchFocus()",
         "desc": "Switch focus from one side of a Split View to another, with an animated arrow showing the switch.",
         "doc": "Switch focus from one side of a Split View to another, with an animated arrow showing the switch.\n\nParameters:\n * None\n\nReturns:\n * None",
@@ -247,6 +262,21 @@
         "signature": "SplitView:showImage",
         "stripped_doc": "",
         "type": "Variable"
+      },
+      {
+        "def": "SplitView:swapWindows",
+        "desc": "Swap the two spaces in a full screen split view",
+        "doc": "Swap the two spaces in a full screen split view\n\nParameters:\n * None\n\nReturns:\n * None",
+        "name": "swapWindows",
+        "parameters": [
+          " * None"
+        ],
+        "returns": [
+          " * None"
+        ],
+        "signature": "SplitView:swapWindows",
+        "stripped_doc": "",
+        "type": "Method"
       },
       {
         "def": "SplitView:switchFocus()",

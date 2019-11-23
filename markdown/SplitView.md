@@ -32,6 +32,7 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
  * [byName](#byName)
  * [choose](#choose)
  * [removeCurrentFullScreenDesktop](#removeCurrentFullScreenDesktop)
+ * [swapWindows](#swapWindows)
  * [switchFocus](#switchFocus)
 
 ## API Documentation
@@ -98,6 +99,14 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
 | **Signature**                               | `SplitView:removeCurrentFullScreenDesktop`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.                                                                     |
+| **Parameters**                              | <ul><li>None</li></ul> |
+| **Returns**                                 | <ul><li>None</li></ul>          |
+
+| [swapWindows](#swapWindows)         |                                                                                     |
+| --------------------------------------------|-------------------------------------------------------------------------------------|
+| **Signature**                               | `SplitView:swapWindows`                                                                    |
+| **Type**                                    | Method                                                                     |
+| **Description**                             | Swap the two spaces in a full screen split view                                                                     |
 | **Parameters**                              | <ul><li>None</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
 

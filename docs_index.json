@@ -59,6 +59,12 @@
     "type": "Method"
   },
   {
+    "desc": "Swap the two spaces in a full screen split view",
+    "module": "SplitView",
+    "name": "swapWindows",
+    "type": "Method"
+  },
+  {
     "desc": "Switch focus from one side of a Split View to another, with an animated arrow showing the switch.",
     "module": "SplitView",
     "name": "switchFocus",
