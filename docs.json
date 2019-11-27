@@ -148,6 +148,15 @@
         "signature": "SplitView:showImage",
         "stripped_doc": "",
         "type": "Variable"
+      },
+      {
+        "def": "SplitView:tileSide",
+        "desc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+        "doc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+        "name": "tileSide",
+        "signature": "SplitView:tileSide",
+        "stripped_doc": "",
+        "type": "Variable"
       }
     ],
     "desc": "*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview \"halves\" and ability to close a fullscreen or split desktop by keyboard.",
@@ -292,6 +301,15 @@
         "signature": "SplitView:switchFocus()",
         "stripped_doc": "",
         "type": "Method"
+      },
+      {
+        "def": "SplitView:tileSide",
+        "desc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+        "doc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+        "name": "tileSide",
+        "signature": "SplitView:tileSide",
+        "stripped_doc": "",
+        "type": "Variable"
       }
     ],
     "name": "SplitView",

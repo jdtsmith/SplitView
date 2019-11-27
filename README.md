@@ -9,15 +9,18 @@ Important points:
 
 Example config in your `~/.hammerspoon/init.lua`:
 ```
+
 mash =      {"ctrl", "cmd"}
 mashshift = {"ctrl", "cmd","shift"}
-hs.loadSpoon("SplitView",true) -- add to global, so we can access from command line
-spoon.SplitView:bindHotkeys({choose={mash,"e"},
-			     chooseAppEmacs={mashshift,"e","Emacs"},
-			     chooseAppWin130={mashshift,"o","Terminal","130"},
-			     switchFocus={mash,"x"},
-                             swapWindows={mashshift,"X"},
-			     removeDesktop={mashshift,"k"}})
+-- SplitView for Split Screen 
+hs.spoons.use("SplitView",
+	      {config = {tileSide="right"},
+	       hotkeys={choose={mash,"e"},
+					chooseAppEmacs={mashshift,"e","Emacs"},
+					chooseAppWin130={mashshift,"o","Terminal","130"},
+					removeDesktop={mashshift,"k"},
+					swapWindows={mashshift,"x"},
+					switchFocus={mash,"x"}}})
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!

@@ -81,6 +81,10 @@ obj.delayOtherClick = 0.2
 --- (Float) Time interval in seconds to check for MC/SplitView animations to complete
 obj.checkInterval = 0.1
 
+--- SplitView:tileSide
+--- Variable
+--- (String) Which side to tile the window on ("left" or "right"). For Catalina only
+obj.tileSide = "left"
 
 -- Internal Function
 local function getGoodFocusedWindow(nofull)
@@ -227,15 +231,16 @@ function obj:performSplit(thiswin,otherwin)
    hst.doAfter(self.delayZoomHold, -- hold green button to activate SV!
 	       function()
 		  if self.osversion >= "10.15" then -- deal with new popup pane
-		     local menu, tileLeft=ax.systemElementAtPosition(clickPoint)[1] -- 1st child of zoom button!
+		     local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
+		     local menu, tileClick=ax.systemElementAtPosition(clickPoint)[1] -- 1st child of zoom button!
 		     for _,child in ipairs(menu) do
-			if child:role() == "AXMenuItem" and child:identifier():find("tileLeft") then
-			   tileLeft=child
+			if child:role() == "AXMenuItem" and child:identifier():find(side) then
+			   tileClick=child
 			   break
 			end 
 		     end
-		     if tileLeft then
-			local frame=tileLeft:frame()
+		     if tileClick then
+			local frame=tileClick:frame()
 			clickPoint.x=frame.x+frame.w/2
 			clickPoint.y=frame.y+frame.h/2
 		     else 

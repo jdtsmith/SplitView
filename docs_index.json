@@ -35,6 +35,12 @@
     "type": "Variable"
   },
   {
+    "desc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+    "module": "SplitView",
+    "name": "tileSide",
+    "type": "Variable"
+  },
+  {
     "desc": "Binds hotkeys for SplitView",
     "module": "SplitView",
     "name": "bindHotkeys",

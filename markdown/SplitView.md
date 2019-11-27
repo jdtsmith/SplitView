@@ -27,6 +27,7 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
  * [delayOtherClick](#delayOtherClick)
  * [delayZoomHold](#delayZoomHold)
  * [showImage](#showImage)
+ * [tileSide](#tileSide)
 * Methods - API calls which can only be made on an object returned by a constructor
  * [bindHotkeys](#bindHotkeys)
  * [byName](#byName)
@@ -68,6 +69,12 @@ spoon.SplitView:bindHotkeys({choose={mash,"e"},
 | **Signature**                               | `SplitView:showImage`                                                                    |
 | **Type**                                    | Variable                                                                     |
 | **Description**                             | (Boolean) Whether to show a thumbnail image of the window in the choice selection list.  On by default (which slightly slows the interface).                                                                     |
+
+| [tileSide](#tileSide)         |                                                                                     |
+| --------------------------------------------|-------------------------------------------------------------------------------------|
+| **Signature**                               | `SplitView:tileSide`                                                                    |
+| **Type**                                    | Variable                                                                     |
+| **Description**                             | (String) Which side to tile the window on ("left" or "right"). For Catalina only                                                                     |
 
 ### Methods
 
