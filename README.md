@@ -16,11 +16,11 @@ mashshift = {"ctrl", "cmd","shift"}
 hs.spoons.use("SplitView",
 	      {config = {tileSide="right"},
 	       hotkeys={choose={mash,"e"},
-					chooseAppEmacs={mashshift,"e","Emacs"},
-					chooseAppWin130={mashshift,"o","Terminal","130"},
-					removeDesktop={mashshift,"k"},
-					swapWindows={mashshift,"x"},
-					switchFocus={mash,"x"}}})
+	       			chooseAppEmacs={mashshift,"e","Emacs"},
+	       			chooseAppWin130={mashshift,"o","Terminal","130"},
+	       			removeDesktop={mashshift,"k"},
+	       			swapWindows={mashshift,"x"},
+	       			switchFocus={mash,"x"}}})
 ```
 
 To install, just [download](https://github.com/jdtsmith/SplitView/releases/latest) `SplitView.spoon.zip` and double-click it!
