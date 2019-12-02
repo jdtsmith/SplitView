@@ -1,5 +1,8 @@
 # SplitView   ![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/jdtsmith/SplitView.svg?label=Version)
 
+
+![SplitView in Action](https://raw.githubusercontent.com/jdtsmith/SplitView/master/sv.png)
+
 `SplitView` is a [Hammerspoon](https://www.hammerspoon.org) Spoon which can automate the painful chore of putting two windows side by side in MacOS's fullscreen split-view mode.  Using it is simple: just navigate to the first window you'd like in the split view, invoke the assigned key shortcut, choose another window from the popup, and watch the magic happen. You can also create special bindings to search by application and/or window name, or even invoke `SplitView` from the command line.  And as a bonus you can bind shortcut keys to toggle focus while in split view from one side to the other, swap the two Split View windows, or remove a full screen space (single or split-view).
 
 Important points:
