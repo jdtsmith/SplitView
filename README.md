@@ -9,6 +9,7 @@ Important points:
 * `SplitView` relies on the undocumented `spaces` API, and the separate accessibility `axuielement` extension.  These _must_ both be installed for `SplitView` to work; see https://github.com/asmagill/hs._asm.undocumented.spaces and https://github.com/asmagill/hs._asm.axuielement/.  These extensions rely on undocumented behavior, so caveat splitviewor.
 * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click on the chosen miniature window.  This requires a few short time delays to work reliably (once for holding the green button, and again to wait for mini-windows to move into position).  If it is unreliable for you, trying increasing these (see `delay` variables in [the reference](http://htmlpreview.github.io/?https://github.com/jdtsmith/SplitView/blob/master/html/SplitView.html).
 * `SplitView` uses `hw.window.filter` to try to ignore atypical windows (menu panes, etc.), which see.  Unrecognized non-standard windows may interfere with `SplitView`'s operation.
+* In addition to the normal `choose` binding, you can bind numerous additional hotkeys to customize which windows are considered for split-view.  You can also specify bindings for special commands `removeDesktop`, `swapWindows`, and `switchFocus` (see [`bindHotkeys` docs](https://htmlpreview.github.io/?https://github.com/jdtsmith/SplitView/blob/master/html/SplitView.html#bindHotkeys)).
 
 Example config in your `~/.hammerspoon/init.lua`:
 ```
