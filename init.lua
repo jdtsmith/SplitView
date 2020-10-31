@@ -411,11 +411,9 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
       iter=iter+1
    end
    if iter==self.maxRefineIter then
-      if self.debug then
-	 print("Maximum Iterations Exceeded...")
-      end
+      print("SplitView Error: Maximum Iterations Exceeded.")
       hse.keyStroke({},"ESCAPE")	 
-   elseif self.degub then
+   elseif self.debug then
       print("No match found for ",targwin) 
    end
 end
