@@ -146,7 +146,7 @@ function obj:choose(winChoices)
       local choice={text=w:title(),
 		    subText=w:application():title(),
 		    wid=w:id()}
-      if self.showImage then choice.image=w.snapshotForID(w:id()) end
+      if self.showImage then choice.image=hs.window.snapshotForID(w:id()) end
       table.insert(choices,choice)
    end
 
@@ -226,18 +226,18 @@ end
 local function windowAtPosition(...)
    local b=ax.systemElementAtPosition(...)
    if not b then return end
-   if b:role()~="AXWindow" then
-      if b.window then b=b:window() else return end
-   end
+   if b.AXRole~="AXWindow" then b=b.AXWindow end
    return b and b:asHSWindow()
-end 
-
+end
 
 --  Internal function to perform the simulated split view
 --  for two input windows
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
    local clickPoint=thiswin:zoomButtonRect()
+
+   zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
+
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
    hst.doAfter(self.delayZoomHold, -- hold green button to activate SV!
 	       function()
@@ -627,7 +627,7 @@ function obj:removeCurrentFullScreenDesktop()
       end,
       function ()
 	 if self.debug then
-	    print("Closing: ",closeSpace:description())--," and Pressing: ",toSpace:description())
+	    print("Closing: ",closeSpace.AXDescription)--," and Pressing: ",toSpace:description())
 	 end
 	 timeout:stop()
 	 closeSpace:doAXRemoveDesktop()
