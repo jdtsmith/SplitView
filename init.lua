@@ -40,7 +40,7 @@ local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
 --::: Metadata
 obj.name = "SplitView"
-obj.version = "1.5.0"
+obj.version = "1.6.0"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
