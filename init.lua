@@ -627,7 +627,7 @@ function obj:removeCurrentFullScreenDesktop()
       end,
       function ()
 	 if self.debug then
-	    print("Closing: ",closeSpace.AXDescription)--," and Pressing: ",toSpace:description())
+	    print("Closing: ",closeSpace.AXDescription)
 	 end
 	 timeout:stop()
 	 closeSpace:doAXRemoveDesktop()
