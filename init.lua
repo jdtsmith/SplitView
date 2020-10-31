@@ -1,6 +1,6 @@
 --- === SplitView ===
 ---
---- *Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.
+--- *Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard. Requires MacOS>=10.15
 --- Important points:
 --- * `SplitView` relies on the undocumented `spaces` API, and the separate accessibility ui `axuielement`; which _must_ both be installed for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces and https://github.com/asmagill/hs._asm.axuielement/, 
 --- * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires some time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables in the reference below).
@@ -46,7 +46,10 @@ obj.homepage = "https://github.com/Hammerspoon/Spoons"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 local ret, ver = hs.applescript("system version of (system info)")
-obj.osversion = ver
+if not (ver >= "10.15") then
+   print("SplitView requires MacOS 10.15 or later, aborting...")
+   return nil
+end 
 
 --::: Default keys
 local mash =      {"ctrl", "cmd"}
@@ -69,22 +72,16 @@ obj.showImage = true
 --- be slow for large grids)
 obj.debug = false
 
---- SplitView:delayZoomHold
---- Variable
---- (Float) How long in seconds to "hold" the zoom button down.
----  Defaults to 0.75s.
-obj.delayZoomHold = 0.75
-
 --- SplitView:delayOtherClick
 --- Variable
 --- (Float) How long in seconds to delay finding and clicking the other window
----  Defaults to 0.2s.
-obj.delayOtherClick = 0.2
+---  Defaults to 0.3s.
+obj.delayOtherClick = 0.3
 
 --- SplitView:checkInterval
 --- Variable
---- (Float) Time interval in seconds to check for MC/SplitView animations to complete
-obj.checkInterval = 0.1
+--- (Float) Time interval in seconds to check for various MC/SplitView actions to complete
+obj.checkInterval = 0.08
 
 --- SplitView:tileSide
 --- Variable
@@ -230,37 +227,34 @@ local function windowAtPosition(...)
    return b and b:asHSWindow()
 end
 
---  Internal function to perform the simulated split view
+--  SplitView:performSplit: Internal function to perform the automated split view
 --  for two input windows
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
    local clickPoint=thiswin:zoomButtonRect()
-
-   zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
-
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
-   hst.doAfter(self.delayZoomHold, -- hold green button to activate SV!
-	       function()
-		  if self.osversion >= "10.15" then -- deal with new popup pane
-		     local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
-		     for _,child in ipairs(zoom[1]) do
-			if child.AXRole == "AXMenuItem" and child.AXIdentifier:find(side) then
-			   child:doAXPress()
-			   break
-			end 
-		     end
-		  end
-		  hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post() 
-		  hst.waitUntil(
-		     function () return thiswin:isFullscreen() end,
-		     function ()
-			hst.doAfter(self.delayOtherClick,
-				    function()
-				       local pos=self:findMiniSplitViewWindow(thiswin,otherwin)
-				       if pos then hse.leftClick(pos) end
-			end)
-		  end, self.checkInterval)
-   end)
+   
+   zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
+   hst.waitUntil(
+      function () return zoom.AXChildren end, -- wait for menu to appear
+      function()
+	 local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
+	 for _,child in ipairs(zoom[1]) do
+	    if child.AXRole == "AXMenuItem" and child.AXIdentifier:find(side) then
+	       child:doAXPress()
+	       break
+	    end 
+	 end
+	 hst.waitUntil(
+	    function () return thiswin:isFullscreen() end, -- close but not really done
+	    function ()
+	       hst.doAfter(self.delayOtherClick,
+			   function()
+			      local pos=self:findMiniSplitViewWindow(thiswin,otherwin)
+			      if pos then hse.leftClick(pos) end
+	       end)
+	    end, self.checkInterval)
+      end, self.checkInterval)
 end
 
 
