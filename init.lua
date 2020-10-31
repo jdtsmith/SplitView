@@ -91,6 +91,12 @@ obj.checkInterval = 0.1
 --- (String) Which side to tile the window on ("left" or "right"). For Catalina only
 obj.tileSide = "left"
 
+--- SplitView:maxRefineIter
+--- Variable
+--- (String) Maximum number of mini-screen probe point "jiggle" refinement iterations
+obj.maxRefineIter = 4
+
+
 -- Internal Function
 local function getGoodFocusedWindow(nofull)
    local win = hs.window.focusedWindow()
@@ -333,7 +339,9 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
 
    local cnt=0
    local jigStep,jiggleSet=0.5, {{0.5,0.5}}
-   while true do
+
+   local iter=0
+   while iter<self.maxRefineIter do
       for _,jiggle in pairs(jiggleSet) do 
 	 for i=1,n do
 	    for j=1,m do
@@ -392,6 +400,15 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
       end)
       iter=iter+1
    end
+   if iter==self.maxRefineIter then
+      if self.debug then
+	 print("Maximum Iterations Exceeded...")
+      end
+      hse.keyStroke({},"ESCAPE")	 
+   elseif self.degub then
+      print("No match found for ",targwin) 
+   end
+end
 
 obj.arrow=nil
 obj.timer=nil
@@ -601,20 +618,25 @@ function obj:removeCurrentFullScreenDesktop()
 			    closeSpace=sbl[spaceOrder[space]]
    end)
    
-   local closeSpace=spaceButtons[spaceOrder[space]]
+
    -- toSpace=spaceButtons[spaceOrder[toSpace]]
-   
-   hst.waitUntil( -- wait for MC to finish loading and set AX properties
+   local timeout, timer
+   timer=hst.waitUntil( -- wait for MC to finish loading and set AX properties
       function()
-	 return closeSpace.doRemoveDesktop
-      end, 
+	 return closeSpace and closeSpace.doAXRemoveDesktop
+      end,
       function ()
 	 if self.debug then
 	    print("Closing: ",closeSpace:description())--," and Pressing: ",toSpace:description())
 	 end
-	 closeSpace:doRemoveDesktop()
+	 timeout:stop()
+	 closeSpace:doAXRemoveDesktop()
 	 hse.keyStroke({},"ESCAPE")	 
       end,self.checkInterval)
+   timeout=hst.doAfter(5,function()
+			  print("Timed out waiting for Space Close")
+			  timer:stop()
+   end)
 end
 
 --- SplitView:bindHotkeys(mapping)
