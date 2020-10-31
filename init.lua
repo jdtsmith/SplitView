@@ -25,11 +25,13 @@ local obj = {}
 obj.__index = obj
 
 --::: Modules
-local hasAX, ax = pcall(require,"hs._asm.axuielement") 
+local hasAX, ax
+ax = hs.axuielement
+
 local hasSpaces, spaces = pcall(require, "hs._asm.undocumented.spaces")
 
-if not (hasSpaces and hasAX) then
-   print("hs._asm.undocumented.spaces + hs._asm.axuielement are required for SplitView; please install")
+if not hasSpaces then
+   print("hs._asm.undocumented.spaces + hs.axuielement (HS>=0.9.79) are required for SplitView; please install")
    return nil
 end
 obj.dockAX = ax.applicationElement(hs.application("Dock"))
@@ -202,7 +204,7 @@ function obj:byName(otherapp,otherwin,noChoose)
 
    if self.debug then
       print("byName: ",otherapp,otherwin," found: ",#selectWins," wins")
-      for k,v in pairs(selectWins) do for l,m in pairs(v) do print(k,l,m) end end
+      for i,v in ipairs(selectWins) do print(i,v) end
    end 
    
    if not selectWins or #selectWins==0 then return end
@@ -235,21 +237,12 @@ function obj:performSplit(thiswin,otherwin)
 	       function()
 		  if self.osversion >= "10.15" then -- deal with new popup pane
 		     local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
-		     local menu, tileClick=ax.systemElementAtPosition(clickPoint)[1] -- 1st child of zoom button!
-		     for _,child in ipairs(menu) do
-			if child:role() == "AXMenuItem" and child:identifier():find(side) then
-			   tileClick=child
+		     for _,child in ipairs(zoom[1]) do
+			if child.AXRole == "AXMenuItem" and child.AXIdentifier:find(side) then
+			   child:doAXPress()
 			   break
 			end 
 		     end
-		     if tileClick then
-			local frame=tileClick:frame()
-			clickPoint.x=frame.x+frame.w/2
-			clickPoint.y=frame.y+frame.h/2
-		     else 
-			clickPoint.y = clickPoint.y + 65 -- hope for best
-		     end 
-		     hsee.newMouseEvent(hsee.types.mouseMoved,clickPoint):post()
 		  end
 		  hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post() 
 		  hst.waitUntil(
@@ -397,36 +390,8 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
 				     end end
 				     return t
       end)
-   end 
-   if self.debug then print("No match found for ",targwin) end
-end
+      iter=iter+1
    end
-
-   hs.application.open("Mission Control")
-   local layout=spaces.layout()[scrUUID]
-   local spaces, newSpaceButton=self:spaceButtons(frame)
-   if not newSpaceButton then return end
-   
-   newSpaceButton:doPress();
-
-   -- Find the new space id
-   local layoutRev={}
-   for _,v in pairs(layout) do layoutRev[v]=true end
-   local newSpace=hs.fnutils.find(spaces.layout()[scrUUID],
-				  function(x) return not layoutRev[x] end)
-   -- Wait for new button
-   hst.waitUntil(
-      function() return #self:spaceButtons(frame) > #spaces end,
-      function()
-	 local prop=ax.windowElement(self.thiswin)
-	 hse.keyStroke({},"ESCAPE")
-	 hst.waitWhile( 
-	    function() return self:spaceButtons(frame) end,
-	    function() callback(newSpace) end, self.checkInterval)
-      end,self.checkInterval)
-   return
-end 
-
 
 obj.arrow=nil
 obj.timer=nil
@@ -489,30 +454,50 @@ function obj:switchFocus()
    end
 end
 
+
+-- SplitView:spaceButtons
+-- Find the space button list element and return via callback which takes two args:
+-- element (the AXList element) and error (non-nil if an error occurred searching)
+-- Pass the full frame of the screen of interest and a callback.
+function obj:spaceButtonsList(frame,callback)
+   self.dockAX:elementSearch(
+      function (msg,result,cnt)
+	 --print("GOT ",cnt," results"," time: ",result:runTime())
+	 local args={}
+	 for _,e in ipairs(result) do
+	    if hs.geometry(e.AXFrame):inside(frame) then
+	       callback(e)
+	       return
+	    end
+	 end
+	 callback(nil,'error')
+      end,
+      ax.searchCriteriaFunction({attribute="AXIdentifier",
+				 value="mc.spaces.list"}))
+end
+
+
 -- SplitView:spaceButtons
 -- Internal method to find the spaces Buttons at the top of Mission
 -- Control using accessibility.  Invoke with MC active, passing the
--- full frame of the screen of interest.
-function obj:spaceButtons(frame)
-   local spaceAX=self.dockAX:searchPath({	-- a list of space controls for each screen
-	 {role="AXGroup",identifier="mc"},
-	 {role="AXGroup",identifier="mc.display"},
-	 {role="AXGroup",identifier="mc.spaces"}})
-
-   local spaceButtons, newSpaceButton
-   while spaceAX do
-      local pos=spaceAX:position()
-      if pos.x==frame.x and pos.y==frame.y then -- this is screen's spaces list
-	 newSpaceButton=spaceAX:searchPath({{role="AXButton",identifier="mc.spaces.add"}})
-	 spaceButtons=spaceAX:searchPath({{role="AXList",identifier="mc.spaces.list"}}):
-	    elementSearch({role="AXButton"})
-	 break
-      end
-      spaceAX=spaceAX:next()
-   end
-   return spaceButtons, newSpaceButton
+-- full frame of the screen of interest.  Provide a callback that
+-- takes three arguments: newSpaceButton (a single entity), 
+-- spaceButtons (a table of buttons, one for each space), and error
+-- (non-nil if an error occurred during search)
+function obj:spaceButtons(frame,callback)
+   self:spaceButtonsList(frame,
+			 function(sbl,err)
+			    if err then callback(nil,nil,err) end
+			    local addSpace
+			    for _,sib in ipairs(sbl.AXParent) do 
+			       if sib~=e and sib.AXIdentifier=='mc.spaces.add' then
+				  addSpace=sib
+				  break
+			       end
+			    end
+			    callback(sbl.AXChildren,addSpace)
+   end)
 end 
-
 
 --- SplitView:swapWindows
 --- Method
@@ -538,10 +523,9 @@ function obj:swapWindows()
 			     return w:isFullScreen() and w:topLeft().x==frame.x
       end)
    end
+   if not (win and win:isFullScreen()) then return end
 
    local wframe=win:frame()
-   if not win or not win:isFullScreen() then return end
-
    local x,y=wframe.x + wframe.w/2 , frame.y + 2
 
    clickPoint = win:zoomButtonRect()
@@ -607,14 +591,15 @@ function obj:removeCurrentFullScreenDesktop()
    -- Open Mission control and determine layout
    hs.application.open("Mission Control")
    local layout=spaces.layout()[scrID]
-   -- local toSpace=hs.fnutils.find(layout,function(x) -- first user space in layout
-   -- 				    return spaces.spaceType(x)==spaces.types.user end)
    local spaceOrder={} 
    for k,v in ipairs(layout) do spaceOrder[v]=k end
 
-   -- with MC open, query the Dock's accessibility object 
-   local spaceButtons=self:spaceButtons(frame)
-   if not spaceButtons then return end
+   -- Start searching for space buttons
+   local closeSpace=nil
+   self:spaceButtonsList(frame, function(sbl,error)
+			    if error then return end
+			    closeSpace=sbl[spaceOrder[space]]
+   end)
    
    local closeSpace=spaceButtons[spaceOrder[space]]
    -- toSpace=spaceButtons[spaceOrder[toSpace]]
