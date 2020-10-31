@@ -259,7 +259,7 @@ function obj:performSplit(thiswin,otherwin)
 				       local pos=self:findMiniSplitViewWindow(thiswin,otherwin)
 				       if pos then hse.leftClick(pos) end
 			end)
-		  end)
+		  end, self.checkInterval)
    end)
 end
 
