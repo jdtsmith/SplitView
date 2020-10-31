@@ -107,7 +107,10 @@ end
 --- Choose another window to enter split-view with current window
 ---
 --- Parameters:
----  * `winChoices`: (Optional) A table of windows to choose from (as, e.g., provided by `SplitView:byName`).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are offered.
+---  * `winChoices`: (Optional) A table of windows to choose from (as,
+---  e.g., provided by `SplitView:byName`).  Defaults to choosing
+---  among all other windows on the same screen.  Only standard,
+---  non-fullscreen windows are offered.
 ---
 --- Returns:
 ---  * None
@@ -170,15 +173,28 @@ end
    
 --- SplitView:byName([otherapp,othrewin,noChoose])
 --- Method
---- Select an application and window _by name_ to enter split-view along side the currently focused window
---- Useful for creating custom key bindings for specific applications and/or matching window title strings (see `SplitView:bindHotkeys`).  Also useful for calling from the command line (c.f. `hs.ipc.cliInstall`).  E.g., assuming `spoon.splitView` was assigned in your top level as in the example config above:
+--- Select an application and window _by name_ to enter split-view
+--- along side the currently focused window
+--- Useful for creating custom key bindings for specific applications
+--- and/or matching window title strings (see
+--- `SplitView:bindHotkeys`).  Also useful for calling from the
+--- command line (c.f. `hs.ipc.cliInstall`).  E.g., assuming
+--- `spoon.splitView` was assigned in your top level as in the example
+--- config above:
 ---   `hs -c "spoon.splitView.byName("Terminal","server1")`
---- would enter split view with the current window and a Terminal window with "server1" in the title.
+--- would enter split view with the current window and a Terminal
+--- window with "server1" in the title.
 ---
 --- Parameters:
----  * `otherapp`: (Optional, String) The (partial) name of the other window's application, or omitted/`nil` for no application filtering
----  * `otherwin`: (Optional, String) The (partial) title of the other window, or omitted/`nil` for no window name filtering
----  * `noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.
+---  * `otherapp`: (Optional, String) The (partial) name of the other
+---  window's application, or omitted/`nil` for no application
+---  filtering
+---  * `otherwin`: (Optional, String) The (partial) title of the other
+---  window, or omitted/`nil` for no window name filtering
+---  * `noChoose`: (Optional, Boolean) By default a chooser window is
+---  invoked if more than one window matches. To disable this behavior
+---  and always take the first match (if any), pass `true` for this
+---  parameter.
 ---
 --- Returns:
 ---  * None
@@ -312,10 +328,10 @@ end
 -- SplitView:findMiniSplitViewWindow
 -- Internal Method: Find the position of a mini-representation of
 -- given target window by tiling the screen and querying for
--- accessibility entities there.
+-- matching accessibility entities there.
 -- Must be called after split view mini-window animation completes.
 -- Keeps refining the tiling onto smaller grids until a window is
--- found (up to self.maxRefineIter)
+-- found (up to self.maxRefineIter times)
 function obj:findMiniSplitViewWindow(thiswin,targwin)   
    local t=hs.timer.absoluteTime()
    local frame=thiswin:screen():fullFrame()
