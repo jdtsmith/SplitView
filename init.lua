@@ -33,7 +33,7 @@ if not (hasSpaces and hasAX) then
    return nil
 end
 obj.dockAX = ax.applicationElement(hs.application("Dock"))
-   :searchPath({role="AXApplication"})
+--   :searchPath({role="AXApplication"})
 local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
 --::: Metadata
@@ -317,11 +317,13 @@ function obj:findSafeDither(x,y,targ,targwin)
 end
 
 -- SplitView:findMiniSplitViewWindow
--- Internal Method: Find a mini-representation of target window by
--- tiling the screen and querying for accessibility entities there.
+-- Internal Method: Find the position of a mini-representation of
+-- given target window by tiling the screen and querying for
+-- accessibility entities there.
 -- Must be called after split view mini-window animation completes.
--- Keeps refining the tiling onto smaller grids until a window is found
-function obj:findMiniSplitViewWindow(thiswin,targwin)
+-- Keeps refining the tiling onto smaller grids until a window is
+-- found (up to self.maxRefineIter)
+function obj:findMiniSplitViewWindow(thiswin,targwin)   
    local t=hs.timer.absoluteTime()
    local frame=thiswin:screen():fullFrame()
    local targ=hs.geometry(frame.x,frame.y,frame.w/2,frame.h) -- LHS by default
@@ -398,17 +400,6 @@ function obj:findMiniSplitViewWindow(thiswin,targwin)
    end 
    if self.debug then print("No match found for ",targwin) end
 end
-
--- SplitView:createSpace(screenUUID,frame,callback)
--- Internal method to create a space, working around a bug in spaces screen-based creation
--- spaces.createScreen() always creates a space on the primary screen.
--- Use accessibility, if available, as a backup option for secondary screens.
--- This method works asynchronously, and when the new space is ready,
--- calls `callback` with the new space ID.
-function obj:createSpace(scrUUID,frame,callback)
-   if scrUUID==hs.screen.primaryScreen():spacesUUID() then -- simple case
-      callback(spaces.createSpace()) -- always creates on primary
-      return
    end
 
    hs.application.open("Mission Control")
