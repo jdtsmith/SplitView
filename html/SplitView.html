@@ -15,7 +15,7 @@
   <body>
     <header>
       <h1><a href="./index.html">docs</a> &raquo; SplitView</h1>
-      <p><em>Open two windows side by side in Full Screen SplitView.</em>  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.
+      <p><em>Open two windows side by side in Full Screen SplitView.</em>  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard. Requires MacOS&gt;=10.15
 Important points:</p>
 <ul>
 <li><code>SplitView</code> relies on the undocumented <code>spaces</code> API, and the separate accessibility ui <code>axuielement</code>; which <em>must</em> both be installed for it to work; see <a href="https://github.com/asmagill/hs._asm.undocumented.spaces">https://github.com/asmagill/hs._asm.undocumented.spaces</a> and <a href="https://github.com/asmagill/hs._asm.axuielement/">https://github.com/asmagill/hs._asm.axuielement/</a>, </li>
@@ -45,7 +45,7 @@ hs.spoons.use("SplitView",
             <li><a href="#checkInterval">checkInterval</a></li>
             <li><a href="#debug">debug</a></li>
             <li><a href="#delayOtherClick">delayOtherClick</a></li>
-            <li><a href="#delayZoomHold">delayZoomHold</a></li>
+            <li><a href="#maxRefineIter">maxRefineIter</a></li>
             <li><a href="#showImage">showImage</a></li>
             <li><a href="#tileSide">tileSide</a></li>
           </ul>
@@ -75,7 +75,7 @@ hs.spoons.use("SplitView",
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(Float) Time interval in seconds to check for MC/SplitView animations to complete</p>
+                <td><p>(Float) Time interval in seconds to check for various MC/SplitView actions to complete</p>
 </td>
               </tr>
             </table>
@@ -115,19 +115,19 @@ be slow for large grids)</p>
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(Float) How long in seconds to delay finding and clicking the other window
- Defaults to 0.2s.</p>
+                <td><p>(Float) How long in seconds to delay finding and clicking the other window.
+ Defaults to 0.3s.</p>
 </td>
               </tr>
             </table>
           </section>
-          <section id="delayZoomHold">
-            <a name="//apple_ref/cpp/Variable/delayZoomHold" class="dashAnchor"></a>
-            <h5><a href="#delayZoomHold">delayZoomHold</a></h5>
+          <section id="maxRefineIter">
+            <a name="//apple_ref/cpp/Variable/maxRefineIter" class="dashAnchor"></a>
+            <h5><a href="#maxRefineIter">maxRefineIter</a></h5>
             <table>
               <tr>
                 <th>Signature</th>
-                <td><code>SplitView:delayZoomHold</code></td>
+                <td><code>SplitView:maxRefineIter</code></td>
               </tr>
               <tr>
                 <th>Type</th>
@@ -135,8 +135,7 @@ be slow for large grids)</p>
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(Float) How long in seconds to "hold" the zoom button down.
- Defaults to 0.75s.</p>
+                <td><p>(String) Maximum number of mini-screen probe point "jiggle" refinement iterations</p>
 </td>
               </tr>
             </table>
@@ -174,7 +173,7 @@ be slow for large grids)</p>
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>(String) Which side to tile the window on ("left" or "right"). For Catalina only</p>
+                <td><p>(String) Which side to tile the window on ("left" or "right").</p>
 </td>
               </tr>
             </table>
@@ -225,15 +224,28 @@ be slow for large grids)</p>
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>Select an application and window <em>by name</em> to enter split-view along side the currently focused window
-Useful for creating custom key bindings for specific applications and/or matching window title strings (see <code>SplitView:bindHotkeys</code>).  Also useful for calling from the command line (c.f. <code>hs.ipc.cliInstall</code>).  E.g., assuming <code>spoon.splitView</code> was assigned in your top level as in the example config above:
+                <td><p>Select an application and window <em>by name</em> to enter split-view
+along side the currently focused window
+Useful for creating custom key bindings for specific applications
+and/or matching window title strings (see
+<code>SplitView:bindHotkeys</code>).  Also useful for calling from the
+command line (c.f. <code>hs.ipc.cliInstall</code>).  E.g., assuming
+<code>spoon.splitView</code> was assigned in your top level as in the example
+config above:
   <code>hs -c "spoon.splitView.byName("Terminal","server1")</code>
-would enter split view with the current window and a Terminal window with "server1" in the title.</p>
+would enter split view with the current window and a Terminal
+window with "server1" in the title.</p>
 <p>Parameters:</p>
 <ul>
-<li><code>otherapp</code>: (Optional, String) The (partial) name of the other window's application, or omitted/<code>nil</code> for no application filtering</li>
-<li><code>otherwin</code>: (Optional, String) The (partial) title of the other window, or omitted/<code>nil</code> for no window name filtering</li>
-<li><code>noChoose</code>: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass <code>true</code> for this parameter.</li>
+<li><code>otherapp</code>: (Optional, String) The (partial) name of the other
+window's application, or omitted/<code>nil</code> for no application
+filtering</li>
+<li><code>otherwin</code>: (Optional, String) The (partial) title of the other
+window, or omitted/<code>nil</code> for no window name filtering</li>
+<li><code>noChoose</code>: (Optional, Boolean) By default a chooser window is
+invoked if more than one window matches. To disable this behavior
+and always take the first match (if any), pass <code>true</code> for this
+parameter.</li>
 </ul>
 <p>Returns:</p>
 <ul>
@@ -257,10 +269,13 @@ would enter split view with the current window and a Terminal window with "serve
               </tr>
               <tr>
                 <th>Description</th>
-                <td><p>Choose another window to enter split-view with current window</p>
+                <td><p>Choose another window to enter split-view with together with the current window</p>
 <p>Parameters:</p>
 <ul>
-<li><code>winChoices</code>: (Optional) A table of windows to choose from (as, e.g., provided by <code>SplitView:byName</code>).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are offered.</li>
+<li><code>winChoices</code>: (Optional) A table of hs.windows to choose from (as,
+e.g., provided by <code>SplitView:byName</code>).  Defaults to choosing
+among all other windows on the same screen.  Only standard,
+non-fullscreen windows from the list are included.</li>
 </ul>
 <p>Returns:</p>
 <ul>

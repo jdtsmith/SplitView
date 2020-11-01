@@ -74,7 +74,7 @@ obj.debug = false
 
 --- SplitView:delayOtherClick
 --- Variable
---- (Float) How long in seconds to delay finding and clicking the other window
+--- (Float) How long in seconds to delay finding and clicking the other window.
 ---  Defaults to 0.3s.
 obj.delayOtherClick = 0.3
 
@@ -85,14 +85,13 @@ obj.checkInterval = 0.08
 
 --- SplitView:tileSide
 --- Variable
---- (String) Which side to tile the window on ("left" or "right"). For Catalina only
+--- (String) Which side to tile the window on ("left" or "right"). 
 obj.tileSide = "left"
 
 --- SplitView:maxRefineIter
 --- Variable
 --- (String) Maximum number of mini-screen probe point "jiggle" refinement iterations
 obj.maxRefineIter = 4
-
 
 -- Internal Function
 local function getGoodFocusedWindow(nofull)
@@ -104,13 +103,13 @@ end
 
 --- SplitView:choose()
 --- Method
---- Choose another window to enter split-view with current window
+--- Choose another window to enter split-view with together with the current window
 ---
 --- Parameters:
----  * `winChoices`: (Optional) A table of windows to choose from (as,
+---  * `winChoices`: (Optional) A table of hs.windows to choose from (as,
 ---  e.g., provided by `SplitView:byName`).  Defaults to choosing
 ---  among all other windows on the same screen.  Only standard,
----  non-fullscreen windows are offered.
+---  non-fullscreen windows from the list are included.
 ---
 --- Returns:
 ---  * None

@@ -1,11 +1,11 @@
 [
   {
-    "desc": "*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview \"halves\" and ability to close a fullscreen or split desktop by keyboard.",
+    "desc": "*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview \"halves\" and ability to close a fullscreen or split desktop by keyboard. Requires MacOS>=10.15",
     "name": "SplitView",
     "type": "Module"
   },
   {
-    "desc": "(Float) Time interval in seconds to check for MC/SplitView animations to complete",
+    "desc": "(Float) Time interval in seconds to check for various MC/SplitView actions to complete",
     "module": "SplitView",
     "name": "checkInterval",
     "type": "Variable"
@@ -17,15 +17,15 @@
     "type": "Variable"
   },
   {
-    "desc": "(Float) How long in seconds to delay finding and clicking the other window",
+    "desc": "(Float) How long in seconds to delay finding and clicking the other window.",
     "module": "SplitView",
     "name": "delayOtherClick",
     "type": "Variable"
   },
   {
-    "desc": "(Float) How long in seconds to \"hold\" the zoom button down.",
+    "desc": "(String) Maximum number of mini-screen probe point \"jiggle\" refinement iterations",
     "module": "SplitView",
-    "name": "delayZoomHold",
+    "name": "maxRefineIter",
     "type": "Variable"
   },
   {
@@ -35,7 +35,7 @@
     "type": "Variable"
   },
   {
-    "desc": "(String) Which side to tile the window on (\"left\" or \"right\"). For Catalina only",
+    "desc": "(String) Which side to tile the window on (\"left\" or \"right\"). ",
     "module": "SplitView",
     "name": "tileSide",
     "type": "Variable"
@@ -47,13 +47,13 @@
     "type": "Method"
   },
   {
-    "desc": "Select an application and window _by name_ to enter split-view along side the currently focused window",
+    "desc": "Select an application and window _by name_ to enter split-view",
     "module": "SplitView",
     "name": "byName",
     "type": "Method"
   },
   {
-    "desc": "Choose another window to enter split-view with current window",
+    "desc": "Choose another window to enter split-view with together with the current window",
     "module": "SplitView",
     "name": "choose",
     "type": "Method"

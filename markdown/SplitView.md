@@ -1,7 +1,7 @@
 # [docs](index.md) » SplitView
 ---
 
-*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard.
+*Open two windows side by side in Full Screen SplitView.*  Select by name and/or using a searchable popup display.  Also provides focus toggling between splitview "halves" and ability to close a fullscreen or split desktop by keyboard. Requires MacOS>=10.15
 Important points:
 * `SplitView` relies on the undocumented `spaces` API, and the separate accessibility ui `axuielement`; which _must_ both be installed for it to work; see https://github.com/asmagill/hs._asm.undocumented.spaces and https://github.com/asmagill/hs._asm.axuielement/, 
 * This tool works by _simulating_ the split-view user interface: a long green-button click followed by a 2nd window click.  This requires some time delays to work reliably.  If it is unreliable for you, trying increasing these (see `delay*` variables in the reference below).
@@ -28,7 +28,7 @@ hs.spoons.use("SplitView",
  * [checkInterval](#checkInterval)
  * [debug](#debug)
  * [delayOtherClick](#delayOtherClick)
- * [delayZoomHold](#delayZoomHold)
+ * [maxRefineIter](#maxRefineIter)
  * [showImage](#showImage)
  * [tileSide](#tileSide)
 * Methods - API calls which can only be made on an object returned by a constructor
@@ -47,7 +47,7 @@ hs.spoons.use("SplitView",
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:checkInterval`                                                                    |
 | **Type**                                    | Variable                                                                     |
-| **Description**                             | (Float) Time interval in seconds to check for MC/SplitView animations to complete                                                                     |
+| **Description**                             | (Float) Time interval in seconds to check for various MC/SplitView actions to complete                                                                     |
 
 | [debug](#debug)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
@@ -59,13 +59,13 @@ hs.spoons.use("SplitView",
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:delayOtherClick`                                                                    |
 | **Type**                                    | Variable                                                                     |
-| **Description**                             | (Float) How long in seconds to delay finding and clicking the other window                                                                     |
+| **Description**                             | (Float) How long in seconds to delay finding and clicking the other window.                                                                     |
 
-| [delayZoomHold](#delayZoomHold)         |                                                                                     |
+| [maxRefineIter](#maxRefineIter)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
-| **Signature**                               | `SplitView:delayZoomHold`                                                                    |
+| **Signature**                               | `SplitView:maxRefineIter`                                                                    |
 | **Type**                                    | Variable                                                                     |
-| **Description**                             | (Float) How long in seconds to "hold" the zoom button down.                                                                     |
+| **Description**                             | (String) Maximum number of mini-screen probe point "jiggle" refinement iterations                                                                     |
 
 | [showImage](#showImage)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
@@ -77,7 +77,7 @@ hs.spoons.use("SplitView",
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:tileSide`                                                                    |
 | **Type**                                    | Variable                                                                     |
-| **Description**                             | (String) Which side to tile the window on ("left" or "right"). For Catalina only                                                                     |
+| **Description**                             | (String) Which side to tile the window on ("left" or "right").                                                                      |
 
 ### Methods
 
@@ -92,16 +92,16 @@ hs.spoons.use("SplitView",
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:byName([otherapp,othrewin,noChoose])`                                                                    |
 | **Type**                                    | Method                                                                     |
-| **Description**                             | Select an application and window _by name_ to enter split-view along side the currently focused window                                                                     |
-| **Parameters**                              | <ul><li>`otherapp`: (Optional, String) The (partial) name of the other window's application, or omitted/`nil` for no application filtering</li><li>`otherwin`: (Optional, String) The (partial) title of the other window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.</li></ul> |
+| **Description**                             | Select an application and window _by name_ to enter split-view                                                                     |
+| **Parameters**                              | <ul><li>`otherapp`: (Optional, String) The (partial) name of the other</li><li> window's application, or omitted/`nil` for no application</li><li> filtering</li><li>`otherwin`: (Optional, String) The (partial) title of the other</li><li> window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is</li><li> invoked if more than one window matches. To disable this behavior</li><li> and always take the first match (if any), pass `true` for this</li><li> parameter.</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
 
 | [choose](#choose)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:choose()`                                                                    |
 | **Type**                                    | Method                                                                     |
-| **Description**                             | Choose another window to enter split-view with current window                                                                     |
-| **Parameters**                              | <ul><li>`winChoices`: (Optional) A table of windows to choose from (as, e.g., provided by `SplitView:byName`).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows are offered.</li></ul> |
+| **Description**                             | Choose another window to enter split-view with together with the current window                                                                     |
+| **Parameters**                              | <ul><li>`winChoices`: (Optional) A table of hs.windows to choose from (as,</li><li> e.g., provided by `SplitView:byName`).  Defaults to choosing</li><li> among all other windows on the same screen.  Only standard,</li><li> non-fullscreen windows from the list are included.</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
 
 | [removeCurrentFullScreenDesktop](#removeCurrentFullScreenDesktop)         |                                                                                     |
