@@ -42,7 +42,7 @@ local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 obj.name = "SplitView"
 obj.version = "1.6.0"
 obj.author = "JD Smith"
-obj.homepage = "https://github.com/Hammerspoon/Spoons"
+obj.homepage = "https://github.com/jdtsmith/SplitView"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 local ret, ver = hs.applescript("system version of (system info)")
