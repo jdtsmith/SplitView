@@ -533,7 +533,7 @@ end
 --- Returns:
 ---  * None
 function obj:swapWindows()
-   local mousePos=hs.mouse.getAbsolutePosition()
+   local mousePos=hs.mouse.absolutePosition()
    local win = getGoodFocusedWindow()
    local screen=win:screen()
    local frame=screen:frame()
@@ -596,7 +596,7 @@ end
 function obj:removeCurrentFullScreenDesktop()
    -- screen with cursor in it
    local frame, screen
-   local cursor=hs.mouse.getAbsolutePosition()
+   local cursor=hs.mouse.absolutePosition()
    for _,s in pairs(hs.screen.allScreens()) do
       frame=s:fullFrame()
       if cursor.x >= frame.x and cursor.x<frame.x + frame.w and
