@@ -250,11 +250,20 @@ function obj:performSplit(thiswin,otherwin)
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
    
    zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
+   if zoom.AXRole == "AXWindow" then -- Missed the button
+      for _,child in ipairs(zoom) do 
+	 if child.AXSubrole == "AXFullScreenButton" then
+	    zoom = child
+	    break
+	 end
+      end
+   end
+
    hst.waitUntil(
       function () return zoom.AXChildren end, -- wait for menu to appear
       function()
 	 local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
-	 for _,child in ipairs(zoom[1]) do
+	 for _,child in ipairs(zoom[1]) do -- has one child: AXMenu
 	    if child.AXRole == "AXMenuItem" and child.AXIdentifier:find(side) then
 	       child:doAXPress()
 	       break
