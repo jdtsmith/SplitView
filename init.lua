@@ -40,7 +40,7 @@ local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
 --::: Metadata
 obj.name = "SplitView"
-obj.version = "1.6.0"
+obj.version = "1.6.1"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/jdtsmith/SplitView"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
@@ -250,6 +250,9 @@ function obj:performSplit(thiswin,otherwin)
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
    
    zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
+   if zoom.AXRole == "AXToolbar" then -- missed on toolbar
+      zoom = zoom.AXParent
+   end
    if zoom.AXRole == "AXWindow" then -- Missed the button
       for _,child in ipairs(zoom) do 
 	 if child.AXSubrole == "AXFullScreenButton" then
