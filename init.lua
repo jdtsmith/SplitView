@@ -28,10 +28,10 @@ obj.__index = obj
 local hasAX, ax
 ax = hs.axuielement
 
-local hasSpaces, spaces = pcall(require, "hs._asm.undocumented.spaces")
+local hasSpaces, spaces = pcall(require, "hs.spaces")
 
 if not hasSpaces then
-   print("hs._asm.undocumented.spaces + hs.axuielement (HS>=0.9.79) are required for SplitView; please install")
+   print("hs.spaces + hs.axuielement (HS>=0.9.79) are required for SplitView; please install")
    return nil
 end
 obj.dockAX = ax.applicationElement(hs.application("Dock"))
@@ -491,7 +491,7 @@ function obj:switchFocus()
 end
 
 
--- SplitView:spaceButtons
+-- SplitView:spaceButtonsList
 -- Find the space button list element and return via callback which takes two args:
 -- element (the AXList element) and error (non-nil if an error occurred searching)
 -- Pass the full frame of the screen of interest and a callback.
@@ -617,16 +617,17 @@ function obj:removeCurrentFullScreenDesktop()
 	 break
       end
    end
-
+   
    -- current space for this screen, only fullscreen allowed
-   local scrID=screen:spacesUUID()
-   local space=spaces.spacesByScreenUUID(spaces.masks.currentSpaces)[scrID][1]
+   local scrID=screen:getUUID()
+   local space=spaces.activeSpaces()[scrID]
    local type=spaces.spaceType(space)
-   if not (type==spaces.types.fullscreen or type==spaces.types.tiled) then return end
+   if self.debug then print("Space: ",space," Type: ",type) end
+   if not (type=="fullscreen" or type=="tiled") then return end
 
    -- Open Mission control and determine layout
    hs.application.open("Mission Control")
-   local layout=spaces.layout()[scrID]
+   local layout=spaces.allSpaces()[scrID]
    local spaceOrder={} 
    for k,v in ipairs(layout) do spaceOrder[v]=k end
 
