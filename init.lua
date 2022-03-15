@@ -21,6 +21,7 @@
 --- 	       			swapWindows={mashshift,"x"},
 --- 	       			switchFocus={mash,"x"}}})
 --- ```
+--- Version 1.7.0
 local obj = {}
 obj.__index = obj
 
