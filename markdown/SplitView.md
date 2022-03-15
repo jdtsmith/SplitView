@@ -22,6 +22,7 @@ hs.spoons.use("SplitView",
 	       			swapWindows={mashshift,"x"},
 	       			switchFocus={mash,"x"}}})
 ```
+Version 1.7.0
 
 ## API Overview
 * Variables - Configurable values
@@ -86,23 +87,33 @@ hs.spoons.use("SplitView",
 | **Signature**                               | `SplitView:bindHotkeys(mapping)`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Binds hotkeys for SplitView                                                                     |
-| **Parameters**                              | <ul><li>mapping - A table containing hotkey details for the following items:</li><li> choose - Interactively choose another window to enter split-view with</li><li> switchFocus - Switch the split view window focus</li><li> removeDesktop - Remove the current fullscreen desktop</li><li> chooseApp* - Create one or more special `choose` bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. `chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}`</li><li> chooseWin* - Create one or more special `choose` bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. `{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}`</li><li> chooseAppWin* - Create one or more special `choose` bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}</li></ul> |
+| **Parameters**                              | <ul><li>mapping - A table containing hotkey details for the following items:
+  choose - Interactively choose another window to enter split-view with
+  switchFocus - Switch the split view window focus
+  removeDesktop - Remove the current fullscreen desktop
+  chooseApp* - Create one or more special `choose` bindings to choose among only those windows matching a given application string.  In this case, give the app string to match as the last table entry.  E.g. `chooseAppEmacs={{"cmd","ctrl"},"e","Emacs"}`
+  chooseWin* - Create one or more special `choose` bindings to choose among only those windows matching a given title string.  Give the title string as the last table entry.  E.g. `{chooseWinProj={{"cmd","ctrl"},"p","MyProject"}}`
+  chooseAppWin* - Create one or more special `choose` bindings to choose among only those applications matching a given string, and windows of that applicaiton matching a given title string.  Give the application string, then title string as the last two table entries. E.g. `{chooseAppWinEmacsProj={{"cmd","ctrl"},"1","Emacs","MyProject"}}</li></ul> |
+| **Returns**                                 | <ul></ul>          |
+| **Notes**                                   | <ul></ul>                |
 
 | [byName](#byName)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
-| **Signature**                               | `SplitView:byName([otherapp,othrewin,noChoose])`                                                                    |
+| **Signature**                               | `SplitView:byName([otherapp,otherwin,noChoose])`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Select an application and window _by name_ to enter split-view                                                                     |
-| **Parameters**                              | <ul><li>`otherapp`: (Optional, String) The (partial) name of the other</li><li> window's application, or omitted/`nil` for no application</li><li> filtering</li><li>`otherwin`: (Optional, String) The (partial) title of the other</li><li> window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is</li><li> invoked if more than one window matches. To disable this behavior</li><li> and always take the first match (if any), pass `true` for this</li><li> parameter.</li></ul> |
+| **Parameters**                              | <ul><li>`otherapp`: (Optional, String) The (partial) name of the other window's application, or omitted/`nil` for no application filtering</li><li>`otherwin`: (Optional, String) The (partial) title of the other window, or omitted/`nil` for no window name filtering</li><li>`noChoose`: (Optional, Boolean) By default a chooser window is invoked if more than one window matches. To disable this behavior and always take the first match (if any), pass `true` for this parameter.</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
+| **Notes**                                   | <ul></ul>                |
 
 | [choose](#choose)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
 | **Signature**                               | `SplitView:choose()`                                                                    |
 | **Type**                                    | Method                                                                     |
 | **Description**                             | Choose another window to enter split-view with together with the current window                                                                     |
-| **Parameters**                              | <ul><li>`winChoices`: (Optional) A table of hs.windows to choose from (as,</li><li> e.g., provided by `SplitView:byName`).  Defaults to choosing</li><li> among all other windows on the same screen.  Only standard,</li><li> non-fullscreen windows from the list are included.</li></ul> |
+| **Parameters**                              | <ul><li>`winChoices`: (Optional) A table of hs.windows to choose from (as, e.g., provided by `SplitView:byName`).  Defaults to choosing among all other windows on the same screen.  Only standard, non-fullscreen windows from the list are included.</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
+| **Notes**                                   | <ul></ul>                |
 
 | [removeCurrentFullScreenDesktop](#removeCurrentFullScreenDesktop)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
@@ -111,6 +122,7 @@ hs.spoons.use("SplitView",
 | **Description**                             | Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.                                                                     |
 | **Parameters**                              | <ul><li>None</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
+| **Notes**                                   | <ul></ul>                |
 
 | [swapWindows](#swapWindows)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
@@ -119,6 +131,7 @@ hs.spoons.use("SplitView",
 | **Description**                             | Swap the two spaces in a full screen split view                                                                     |
 | **Parameters**                              | <ul><li>None</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
+| **Notes**                                   | <ul></ul>                |
 
 | [switchFocus](#switchFocus)         |                                                                                     |
 | --------------------------------------------|-------------------------------------------------------------------------------------|
@@ -127,4 +140,5 @@ hs.spoons.use("SplitView",
 | **Description**                             | Switch focus from one side of a Split View to another, with an animated arrow showing the switch.                                                                     |
 | **Parameters**                              | <ul><li>None</li></ul> |
 | **Returns**                                 | <ul><li>None</li></ul>          |
+| **Notes**                                   | <ul></ul>                |
 

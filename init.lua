@@ -171,7 +171,7 @@ function obj:choose(winChoices)
    return self
 end 
    
---- SplitView:byName([otherapp,othrewin,noChoose])
+--- SplitView:byName([otherapp,otherwin,noChoose])
 --- Method
 --- Select an application and window _by name_ to enter split-view
 --- along side the currently focused window
