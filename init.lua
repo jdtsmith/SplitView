@@ -452,7 +452,7 @@ function obj:switchFocus()
 	 local thisWinTopLeft=win:topLeft()
 	 local rect=wto:screen():fullFrame()
 	 local left=wto:topLeft().x<thisWinTopLeft.x
-	 local str= left and "⬅️" or "➡️"
+	 local str= left and "⇚" or "⇛"
 	 local style={size=rect.h/5}
 	 local txtSize=hs.drawing.getTextDrawingSize(str,style)
 
@@ -472,9 +472,9 @@ function obj:switchFocus()
 	    self.arrow:delete()
 	 end
 	 self.arrow=hs.drawing.text(rect,str)
-	 self.arrow:setTextStyle(style):setAlpha(0.5)
+	 self.arrow:setTextStyle(style) -- :setAlpha(0.75)
 	 local animSteps=1
-	 local deltaX=(left and -1 or 1) * txtSize.w/12
+	 local deltaX=(left and -1 or 1) * txtSize.w/10
 	 self.arrow:show()
 	 self.timer=hst.doUntil(function() return animSteps>=15 end,
 	    function()
@@ -485,7 +485,7 @@ function obj:switchFocus()
 		  self.arrow:delete()
 		  self.arrow=nil
 	       end 
-	    end, 1/40)
+	    end, 1/60)
 	 break
       end
    end
