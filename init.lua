@@ -247,7 +247,7 @@ end
 --  for two input windows
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
-   local clickPoint=thiswin:zoomButtonRect()
+   local clickPoint=hs.geometry(thiswin:zoomButtonRect()).center -- center of button
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
    
    zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
