@@ -21,7 +21,7 @@
 --- 	       			swapWindows={mashshift,"x"},
 --- 	       			switchFocus={mash,"x"}}})
 --- ```
---- Version 1.7.1
+--- Version 1.8.0
 local obj = {}
 obj.__index = obj
 
@@ -41,14 +41,14 @@ local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
 --::: Metadata
 obj.name = "SplitView"
-obj.version = "1.7.1"
+obj.version = "1.8.0"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/jdtsmith/SplitView"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
 
 local ret, ver = hs.applescript("system version of (system info)")
-if not (ver >= "10.15") then
-   print("SplitView requires MacOS 10.15 or later, aborting...")
+if not (ver >= "14.1") then
+   print("SplitView requires MacOS 14.1 or later, aborting...")
    return nil
 end 
 
@@ -77,7 +77,7 @@ obj.debug = false
 --- Variable
 --- (Float) How long in seconds to delay finding and clicking the other window.
 ---  Defaults to 0.3s.
-obj.delayOtherClick = 0.3
+obj.delayOtherClick = 0.1
 
 --- SplitView:checkInterval
 --- Variable
@@ -255,20 +255,42 @@ function obj:performSplit(thiswin,otherwin)
       zoom = zoom.AXParent
    end
    if zoom.AXRole == "AXWindow" then -- Missed the button
-      for _,child in ipairs(zoom) do 
+      for _,child in ipairs(zoom) do
+	  if self.debug then
+	     print("Searching for Zoom Menu: ", child)
+	  end
 	 if child.AXSubrole == "AXFullScreenButton" then
 	    zoom = child
 	    break
 	 end
       end
    end
+   
+   if self.debug then
+      print("Proceeding with Zoom: ", zoom)
+   end
 
    hst.waitUntil(
-      function () return zoom.AXChildren end, -- wait for menu to appear
+      function ()
+	 local start
+	 start = zoom
+	 while start and start.AXChildren do
+	    if start.AXRole and start.AXRole == "AXMenu" then return true end
+	    start = start[1] -- first child
+	 end 
+	 return false
+      end, -- wait for AXMenu to appear
       function()
-	 local side=self.tileSide:lower():find('left') and "tileLeft" or "tileRight";
-	 for _,child in ipairs(zoom[1]) do -- has one child: AXMenu
-	    if child.AXRole == "AXMenuItem" and child.AXIdentifier:find(side) then
+	 -- Release the mouse!
+	 hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post()
+
+	 local side=self.tileSide:lower():find('left') and "left" or "right";
+	 sub = zoom[1]
+	 while sub.AXRole == "AXGroup" do sub=sub[1] end -- AXMenu wrapped in AXGroup(s)
+	 for _,child in ipairs(sub) do -- has one child: AXMenu
+	    -- note: subrole no longer set as of MacOS14 :(
+	    if child.AXRole == "AXMenuItem" and child.AXTitle and 
+	       child.AXTitle:lower():find("tile.*" .. side) then
 	       child:doAXPress()
 	       break
 	    end 
@@ -282,7 +304,8 @@ function obj:performSplit(thiswin,otherwin)
 			      if pos then hse.leftClick(pos) end
 	       end)
 	    end, self.checkInterval)
-      end, self.checkInterval)
+      end, 
+      self.checkInterval)
 end
 
 
