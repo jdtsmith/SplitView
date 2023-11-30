@@ -22,7 +22,7 @@ hs.spoons.use("SplitView",
 	       			swapWindows={mashshift,"x"},
 	       			switchFocus={mash,"x"}}})
 ```
-Version 1.7.0
+Version 1.8.0
 
 ## API Overview
 * Variables - Configurable values

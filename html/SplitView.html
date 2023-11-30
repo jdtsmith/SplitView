@@ -29,15 +29,15 @@ Example config in your <code>~/.hammerspoon/init.lua</code>:</p>
 mashshift = {&quot;ctrl&quot;, &quot;cmd&quot;,&quot;shift&quot;}
 -- SplitView for Split Screen 
 hs.spoons.use(&quot;SplitView&quot;,
-          {config = {tileSide=&quot;right&quot;},
-           hotkeys={choose={mash,&quot;e&quot;},
-           			chooseAppEmacs={mashshift,&quot;e&quot;,&quot;Emacs&quot;},
-           			chooseAppWin130={mashshift,&quot;o&quot;,&quot;Terminal&quot;,&quot;130&quot;},
-           			removeDesktop={mashshift,&quot;k&quot;},
-           			swapWindows={mashshift,&quot;x&quot;},
-           			switchFocus={mash,&quot;x&quot;}}})
+	      {config = {tileSide=&quot;right&quot;},
+	       hotkeys={choose={mash,&quot;e&quot;},
+	       			chooseAppEmacs={mashshift,&quot;e&quot;,&quot;Emacs&quot;},
+	       			chooseAppWin130={mashshift,&quot;o&quot;,&quot;Terminal&quot;,&quot;130&quot;},
+	       			removeDesktop={mashshift,&quot;k&quot;},
+	       			swapWindows={mashshift,&quot;x&quot;},
+	       			switchFocus={mash,&quot;x&quot;}}})
 </code></pre>
-<p>Version 1.7.0</p>
+<p>Version 1.8.0</p>
 
       </header>
       <h3>API Overview</h3>
@@ -77,7 +77,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(Float) Time interval in seconds to check for various MC/SplitView actions to complete</td>
+                <td><p>(Float) Time interval in seconds to check for various MC/SplitView actions to complete</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -99,7 +100,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(Boolean) Whether to print debug information to the console.  Can</td>
+                <td><p>(Boolean) Whether to print debug information to the console.  Can</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -121,7 +123,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(Float) How long in seconds to delay finding and clicking the other window.</td>
+                <td><p>(Float) How long in seconds to delay finding and clicking the other window.</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -143,7 +146,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(String) Maximum number of mini-screen probe point "jiggle" refinement iterations</td>
+                <td><p>(String) Maximum number of mini-screen probe point &quot;jiggle&quot; refinement iterations</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -165,7 +169,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(Boolean) Whether to show a thumbnail image of the window in the choice selection list.  On by default (which slightly slows the interface).</td>
+                <td><p>(Boolean) Whether to show a thumbnail image of the window in the choice selection list.  On by default (which slightly slows the interface).</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -187,7 +192,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>(String) Which side to tile the window on ("left" or "right"). </td>
+                <td><p>(String) Which side to tile the window on (&quot;left&quot; or &quot;right&quot;).</p>
+</td>
               </tr>
               <tr>
                 <th>Source</th>
@@ -210,7 +216,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Binds hotkeys for SplitView</td>
+                <td><p>Binds hotkeys for SplitView</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -233,7 +240,7 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Source</th>
-                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L663">./init.lua line 663</a></td>
+                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L686">./init.lua line 686</a></td>
               </tr>
             </table>
           </section>
@@ -251,7 +258,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Select an application and window _by name_ to enter split-view</td>
+                <td><p>Select an application and window <em>by name</em> to enter split-view</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -289,7 +297,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Choose another window to enter split-view with together with the current window</td>
+                <td><p>Choose another window to enter split-view with together with the current window</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -325,7 +334,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.</td>
+                <td><p>Use Mission Control to remove the current full-screen or split-view desktop (aka space) and switch back to the first user space.</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -343,7 +353,7 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Source</th>
-                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L600">./init.lua line 600</a></td>
+                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L623">./init.lua line 623</a></td>
               </tr>
             </table>
           </section>
@@ -361,7 +371,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Swap the two spaces in a full screen split view</td>
+                <td><p>Swap the two spaces in a full screen split view</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -379,7 +390,7 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Source</th>
-                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L539">./init.lua line 539</a></td>
+                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L562">./init.lua line 562</a></td>
               </tr>
             </table>
           </section>
@@ -397,7 +408,8 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Description</th>
-                <td>Switch focus from one side of a Split View to another, with an animated arrow showing the switch.</td>
+                <td><p>Switch focus from one side of a Split View to another, with an animated arrow showing the switch.</p>
+</td>
               </tr>
               <tr>
                   <th>Parameters</th>
@@ -415,7 +427,7 @@ hs.spoons.use(&quot;SplitView&quot;,
               </tr>
               <tr>
                 <th>Source</th>
-                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L435">./init.lua line 435</a></td>
+                <td><a href="https://github.com/Hammerspoon/hammerspoon/blob/master/./init.lua#L458">./init.lua line 458</a></td>
               </tr>
             </table>
           </section>
