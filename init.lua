@@ -21,7 +21,7 @@
 --- 	       			swapWindows={mashshift,"x"},
 --- 	       			switchFocus={mash,"x"}}})
 --- ```
---- Version 1.8.0
+--- Version 1.9.0
 local obj = {}
 obj.__index = obj
 
@@ -41,7 +41,7 @@ local hse,hsee,hst=hs.eventtap,hs.eventtap.event,hs.timer
 
 --::: Metadata
 obj.name = "SplitView"
-obj.version = "1.8.0"
+obj.version = "1.9.0"
 obj.author = "JD Smith"
 obj.homepage = "https://github.com/jdtsmith/SplitView"
 obj.license = "MIT - https://opensource.org/licenses/MIT"
