@@ -243,13 +243,43 @@ local function windowAtPosition(...)
    return b and b:asHSWindow()
 end
 
+
+function clickzoomSequoia(start, side)
+   while start and #start.AXChildren > 0 and start[1].AXRole == "AXGroup" do
+      start=start[1]
+   end
+   local menuItems = start:childrenWithRole("AXMenu")
+   if #menuItems > 0 then
+      start = menuItems[1]
+   else
+      return false
+   end
+   for _,child in ipairs(start) do
+      if child.AXRole == "AXMenuItem" and child.AXTitle == "Full Screen" then
+	 start = child
+	 break
+      end 
+   end
+   start = start[1]
+   for _,child in ipairs(start) do
+      if child.AXRole == "AXMenuItem" and child.AXTitle == side .. " of Screen" then
+	 start = child
+	 child:doAXPress()
+	 return true
+      end
+   end
+   return false
+end
+
+
 --  SplitView:performSplit: Internal function to perform the automated split view
 --  for two input windows
 function obj:performSplit(thiswin,otherwin)
    if not thiswin or not otherwin or thiswin==otherwin then return end
    local clickPoint=hs.geometry(thiswin:zoomButtonRect()).center -- center of button
    hsee.newMouseEvent(hsee.types.leftMouseDown, clickPoint):post()
-   
+
+   local side=self.tileSide:lower():find('left') and "Left" or "Right"
    zoom=ax.applicationElement(thiswin:application()):elementAtPosition(clickPoint)
    if zoom.AXRole == "AXToolbar" then -- missed on toolbar
       zoom = zoom.AXParent
@@ -271,30 +301,11 @@ function obj:performSplit(thiswin,otherwin)
    end
 
    hst.waitUntil(
-      function ()
-	 local start
-	 start = zoom
-	 while start and start.AXChildren do
-	    if start.AXRole and start.AXRole == "AXMenu" then return true end
-	    start = start[1] -- first child
-	 end 
-	 return false
-      end, -- wait for AXMenu to appear
       function()
-	 -- Release the mouse!
-	 hsee.newMouseEvent(hsee.types.leftMouseUp, clickPoint):post()
-
-	 local side=self.tileSide:lower():find('left') and "left" or "right";
-	 sub = zoom[1]
-	 while sub.AXRole == "AXGroup" do sub=sub[1] end -- AXMenu wrapped in AXGroup(s)
-	 for _,child in ipairs(sub) do -- has one child: AXMenu
-	    -- note: subrole no longer set as of MacOS14 :(
-	    if child.AXRole == "AXMenuItem" and child.AXTitle and 
-	       child.AXTitle:lower():find("tile.*" .. side) then
-	       child:doAXPress()
-	       break
-	    end 
-	 end
+	 if #zoom.AXChildren == 0 then return false end
+	 return clickzoomSequoia(zoom[1], side)
+      end, -- wait for Menu to appear
+      function()
 	 hst.waitUntil(
 	    function () return thiswin:isFullscreen() end, -- close but not really done
 	    function ()
